@@ -1,0 +1,8 @@
+name: ItemHuntPlugin
+version: '1.0-SNAPSHOT'
+main: weitma.itemHuntPlugin.ItemHuntPlugin
+api-version: '1.21'
+commands:
+  startchallenge:
+    description: Starts the challenge
+    usage: /<command>
