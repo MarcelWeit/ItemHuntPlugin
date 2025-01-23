@@ -6,3 +6,9 @@ commands:
   startchallenge:
     description: Starts the challenge
     usage: /<command>
+  stopchallenge:
+    description: Stops the challenge
+    usage: /<command>
+  showresults:
+    description: Shows the results
+    usage: /<command>
