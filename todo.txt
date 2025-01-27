@@ -1,0 +1,4 @@
+- Teams
+- Show Results in Inventory
+- New Mode everyone collects the same item?
+- Display Item Picture in UI

@@ -5,10 +5,26 @@ api-version: '1.21'
 commands:
   startchallenge:
     description: Starts the challenge
-    usage: /<command>
+    parameters:
+      - dauer: time
+      - anzahlSkipItems: int
+    default: op
+    permission: itemhuntplugin.startchallenge
   stopchallenge:
     description: Stops the challenge
-    usage: /<command>
-  showresults:
+    default: op
+  results:
     description: Shows the results
-    usage: /<command>
+    default: op
+  teams:
+    description: Shows the teams
+    default: op
+  skipitem:
+    description: Skips item by admin
+    default: op
+  showcollecteditems:
+    description: Shows the collected items
+    default: op
+  reset:
+    description: Resets the challenge
+    default: op

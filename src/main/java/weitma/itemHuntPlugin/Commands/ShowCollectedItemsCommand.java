@@ -5,18 +5,18 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import weitma.itemHuntPlugin.ItemHuntPlugin;
 
-public class StopChallengeCommand implements CommandExecutor {
+public class ShowCollectedItemsCommand implements CommandExecutor {
 
     private final ItemHuntPlugin plugin;
 
-    public StopChallengeCommand(ItemHuntPlugin plugin) {
+    public ShowCollectedItemsCommand(ItemHuntPlugin plugin) {
         this.plugin = plugin;
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
-        plugin.resetChallenge();
+
 
         return true;
     }
