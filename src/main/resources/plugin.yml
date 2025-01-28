@@ -13,18 +13,24 @@ commands:
   stopchallenge:
     description: Stops the challenge
     default: op
+    permission: itemhuntplugin.stopchallenge
   results:
     description: Shows the results
     default: op
+    permission: itemhuntplugin.results
   teams:
     description: Shows the teams
     default: op
+    permission: itemhuntplugin.teams
   skipitem:
     description: Skips item by admin
     default: op
+    permission: itemhuntplugin.skipitem
   showcollecteditems:
     description: Shows the collected items
     default: op
-  reset:
-    description: Resets the challenge
+    permission: itemhuntplugin.showcollecteditems
+  giverocket:
+    description: Gives a rocket
     default: op
+    permission: itemhuntplugin.giverocket

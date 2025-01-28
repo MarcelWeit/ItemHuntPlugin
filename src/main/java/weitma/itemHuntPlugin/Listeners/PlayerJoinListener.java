@@ -1,5 +1,7 @@
 package weitma.itemHuntPlugin.Listeners;
 
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
@@ -35,6 +37,12 @@ public class PlayerJoinListener implements Listener {
         player.discoverRecipes(recipeKeys);
 
         player.sendMessage(ChatColor.GREEN + "You have discovered all recipes! (most of them)");
+
+        TextComponent message = new TextComponent("Spenden: ");
+        TextComponent link = new TextComponent(ChatColor.BLUE + "" + ChatColor.UNDERLINE + "Paypal");
+        link.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://www.paypal.me/marcelweithoener"));
+        message.addExtra(link);
+        player.spigot().sendMessage(message);
 
     }
 }
