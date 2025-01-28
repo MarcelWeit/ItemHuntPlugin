@@ -27,16 +27,28 @@ public final class ItemHuntPlugin extends JavaPlugin {
     public static final int BACKPACK_ID = 100000;
     public static final int SKIPITEM_ID = 100001;
     public static final int SPECIAL_ROCKET_ID = 1000002;
+    public static final int UPDRAFT_ITEM = 1000003;
     private final HashMap<UUID, ArrayList<ItemStack>> itemsCollectedByPlayers;
     private final HashMap<UUID, BossBar> bossBars;
     private final HashMap<UUID, Inventory> backpackInventories;
     private boolean challengeStarted;
     private boolean challengeFinished;
     private int taskID;
-
-    private String currentTimer = "00:00:00";
-
     private ShowResultsCommand showResultsCommand;
+    private String currentTimer;
+    private static HashMap<UUID, Integer> playerTeams = new HashMap<>();
+
+    public static final String[] teamNames = {
+            ChatColor.RED + "Team Red",
+            ChatColor.BLUE + "Team Blue",
+            ChatColor.GREEN + "Team Green",
+            ChatColor.YELLOW + "Team Yellow",
+            ChatColor.BLACK + "Team Black",
+            ChatColor.DARK_PURPLE + "Team Purple",
+            ChatColor.GOLD + "Team Orange",
+            ChatColor.LIGHT_PURPLE + "Team Pink",
+            ChatColor.WHITE + "Team White"
+    };
 
     public ItemHuntPlugin() {
         this.backpackInventories = new HashMap<>();
@@ -60,9 +72,9 @@ public final class ItemHuntPlugin extends JavaPlugin {
         getCommand("startchallenge").setExecutor(new StartChallengeCommand(this));
         getCommand("stopchallenge").setExecutor(new StopChallengeCommand(this));
         getCommand("results").setExecutor(showResultsCommand);
-        getCommand("teams").setExecutor(new ShowTeamsCommand());
+        getCommand("teams").setExecutor(new ShowTeamsCommand(this));
         getCommand("skipitem").setExecutor(new AdminSkipItemCommand(this));
-        getCommand("reset").setExecutor(new ResetWorldCommand(this));
+        getCommand("giverocket").setExecutor(new GiveSpecialRocketCommand(this));
 
         getServer().getPluginManager().registerEvents(new ItemCollectListener(this), this);
         getServer().getPluginManager().registerEvents(new ItemUseListener(this), this);
@@ -75,8 +87,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        //        Bukkit.getBossBars().forEachRemaining(bossBar -> bossBar.removeAll());
-        //        stopTimer();
+        resetChallenge();
     }
 
     private void putItemToCollect(UUID player, Material item) {
@@ -137,11 +148,9 @@ public final class ItemHuntPlugin extends JavaPlugin {
                 .filter(material -> !material.name().equals("MACE"))
                 .filter(material -> !material.name().contains("ANVIL"))
                 .filter(material -> !material.name().contains("PHANTOM"))
-                .filter(material -> !material.name().contains("BELL"))
                 .filter(material -> !material.name().contains("BEEHIVE"))
                 .filter(material -> !material.name().contains("BEE_NEST"))
                 .filter(material -> !material.name().contains("ANCIENT_DEBRIS"))
-                .filter(material -> !material.name().contains("_TERRACOTTA"))
                 .filter(material -> !material.name().contains("AMETHYST_BUD"))
                 .filter(material -> !material.name().contains("AMETHYST_CLUSTER"))
                 .filter(material -> !material.name().contains("BUDDING_AMETHYST"))
@@ -182,11 +191,11 @@ public final class ItemHuntPlugin extends JavaPlugin {
                 .filter(material -> !material.name().contains("SPECTRAL"))
                 .filter(material -> !material.name().contains("NAME_TAG"))
                 .filter(material -> !material.name().contains("WAXED_"))
-                .filter(material -> !material.name().contains("TRIPWIRE"))
                 .filter(material -> !material.name().contains("BEDROCK"))
                 .filter(material -> !material.name().contains("ICE"))
                 .filter(material -> !material.name().contains("MYCELIA"))
                 .filter(material -> !material.name().contains("PURPUR"))
+                .filter(material -> !material.name().contains("GHAST"))
 
                 .toList();
         Material material = pickableItems.get((int) (Math.random() * pickableItems.size()));
@@ -221,11 +230,14 @@ public final class ItemHuntPlugin extends JavaPlugin {
         itemEntity.setPickupDelay(Integer.MAX_VALUE); // Prevent the item from being picked up
         player.addPassenger(itemEntity);
 
+        player.sendMessage("");
         TextComponent message = new TextComponent(ChatColor.DARK_AQUA + "Collect: ");
         TextComponent link = new TextComponent(ChatColor.DARK_AQUA + "" + ChatColor.UNDERLINE + "[" + itemName + "]");
         link.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://minecraft.wiki/w/" + itemNameForWiki));
         message.addExtra(link);
         player.spigot().sendMessage(message);
+
+        player.setPlayerListName(player.getPlayerListName() + ChatColor.GOLD + " [" + itemName + "]");
     }
 
     public boolean isChallengeStarted() {
@@ -290,13 +302,13 @@ public final class ItemHuntPlugin extends JavaPlugin {
                     timeLeft--;
 
                 } else {
-                    challengeFinished();
+                    onTimeExpired();
                 }
             }
         }, 0L, 20L); // 20 ticks = 1 second
     }
 
-    private void challengeFinished() {
+    private void onTimeExpired() {
         Bukkit.getWorlds().forEach(world -> world.getPlayers().forEach(player -> {
             player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, new TextComponent(ChatColor.RED + "" + ChatColor.BOLD + "00:00" +
                     ":00"));
@@ -323,12 +335,9 @@ public final class ItemHuntPlugin extends JavaPlugin {
         Bukkit.getScheduler().cancelTask(taskID);
     }
 
-    public boolean isChallengeFinished() {
-        return challengeFinished;
-    }
-
     public void resetChallenge() {
         stopTimer();
+        resetTeams();
         showResultsCommand.resetScores();
         showResultsCommand.setCurrentIndex(0);
         challengeFinished = false;
@@ -350,6 +359,10 @@ public final class ItemHuntPlugin extends JavaPlugin {
                 }
         );
         challengeStarted = false;
+    }
+
+    public boolean isChallengeFinished() {
+        return challengeFinished;
     }
 
     public HashMap<UUID, ArrayList<ItemStack>> getItemsCollectedByPlayers() {
@@ -436,4 +449,32 @@ public final class ItemHuntPlugin extends JavaPlugin {
         return rocket;
     }
 
+    public void joinTeam(UUID playerID, int team){
+        playerTeams.put(playerID, team);
+    }
+
+    public ArrayList<UUID> getPlayersInTeam(Integer teamNumber){
+        return playerTeams.entrySet().stream()
+                .filter(entry -> entry.getValue().equals(teamNumber))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    public boolean isEveryoneInATeam(){
+        return Bukkit.getOnlinePlayers().stream().allMatch(player -> playerTeams.containsKey(player.getUniqueId()));
+    }
+
+    public void resetTeams(){
+        playerTeams.clear();
+    }
+
+    public ItemStack getUpdraftItem(int amount){
+        ItemStack updraft = new ItemStack(Material.FEATHER, amount);
+        ItemMeta updraftMeta = updraft.getItemMeta();
+        updraftMeta.setDisplayName(ChatColor.GOLD + "Updraft");
+        updraftMeta.setLore(Arrays.asList(ChatColor.GRAY + "Right-click to teleport in the air"));
+        updraftMeta.setCustomModelData(UPDRAFT_ITEM);
+        updraft.setItemMeta(updraftMeta);
+        return updraft;
+    }
 }
