@@ -9,6 +9,7 @@ public class ShowCollectedItemsCommand implements CommandExecutor {
 
     private final ItemHuntPlugin plugin;
 
+    // @todo: implement this command
     public ShowCollectedItemsCommand(ItemHuntPlugin plugin) {
         this.plugin = plugin;
     }

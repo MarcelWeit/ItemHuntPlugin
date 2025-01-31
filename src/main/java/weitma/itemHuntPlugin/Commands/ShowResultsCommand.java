@@ -14,6 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import weitma.itemHuntPlugin.ItemHuntPlugin;
+import weitma.itemHuntPlugin.Utils.Team;
 
 import java.util.*;
 
@@ -21,7 +22,7 @@ public class ShowResultsCommand implements CommandExecutor {
 
     private final ItemHuntPlugin plugin;
     private int currentIndex = 0;
-    private List<Map.Entry<UUID, Integer>> sortedScores;
+    private List<Map.Entry<Team, Integer>> sortedScores;
 
     public ShowResultsCommand(ItemHuntPlugin plugin) {
         Bukkit.getLogger().info("ShowResultsCommand created");
@@ -31,31 +32,16 @@ public class ShowResultsCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
-        //        boolean isTest = false;
-        //        if(args == null){
-        //            isTest = true;
-        //        }
-
         if (plugin.isChallengeFinished()) {
 
             if (sortedScores == null) {
 
-                HashMap<UUID, ArrayList<ItemStack>> itemsCollectedByPlayers = plugin.getItemsCollectedByPlayers();
+                HashMap<Team, ArrayList<ItemStack>> itemsCollectedByTeam = plugin.getItemsCollectedByTeam();
 
-                //                if (isTest) {
-                //                    for (int a = 1; a < 4; a++) {
-                //                        UUID randomID = UUID.randomUUID();
-                //                        itemsCollectedByPlayers.put(randomID, new ArrayList<>(List.of(new ItemStack(Material.ANDESITE))));
-                //                        for (int i = 0; i < a + 120; i++) {
-                //                            itemsCollectedByPlayers.get(randomID).add(new ItemStack(Material.ANDESITE));
-                //                        }
-                //                    }
-                //                }
+                HashMap<Team, Integer> scores = new HashMap<>();
 
-                HashMap<UUID, Integer> scores = new HashMap<>();
-
-                itemsCollectedByPlayers.forEach((uuid, materials) -> {
-                    scores.put(uuid, materials.size());
+                itemsCollectedByTeam.forEach((team, materials) -> {
+                    scores.put(team, materials.size());
                 });
 
                 sortedScores = scores.entrySet().stream()
@@ -64,23 +50,22 @@ public class ShowResultsCommand implements CommandExecutor {
             }
 
             if (currentIndex < sortedScores.size()) {
-                Map.Entry<UUID, Integer> entry = sortedScores.get(currentIndex);
+                Map.Entry<Team, Integer> entry = sortedScores.get(currentIndex);
                 currentIndex++;
-                showResultsAsInventory(entry, plugin.getItemsCollectedByPlayers());
+                showResultsAsInventory(entry, plugin.getItemsCollectedByTeam());
             } else {
                 sender.sendMessage("All players have been displayed!");
                 currentIndex = 0; // Reset index if all players have been displayed
             }
         } else {
-            sender.sendMessage("The challenge has not finished yet!");
+            sender.sendMessage(ChatColor.RED + "The challenge has not finished yet!");
         }
         return true;
     }
 
-    private void showResultsAsInventory(Map.Entry<UUID, Integer> entry, HashMap<UUID, ArrayList<ItemStack>> itemsCollectedByPlayers) {
-        UUID playerUUID = entry.getKey();
+    private void showResultsAsInventory(Map.Entry<Team, Integer> entry, HashMap<Team, ArrayList<ItemStack>> itemsCollectedByTeam) {
+        Team team = entry.getKey();
         int score = entry.getValue();
-        Player player = Bukkit.getPlayer(playerUUID);
 
         Inventory inventory = Bukkit.createInventory(null, 54, "Items collected");
         ItemStack whitePane = new ItemStack(Material.WHITE_STAINED_GLASS_PANE);
@@ -113,7 +98,7 @@ public class ShowResultsCommand implements CommandExecutor {
         }
 
         new BukkitRunnable() {
-            final int maxCounter = itemsCollectedByPlayers.get(playerUUID).size() + 9;
+            final int maxCounter = itemsCollectedByTeam.get(team).size() + 9;
             int listcounter = 0;
             int placement = 10;
 
@@ -125,14 +110,13 @@ public class ShowResultsCommand implements CommandExecutor {
                     cancel(); // Stop the task when all items are added
 
                     for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-                        onlinePlayer.sendTitle(playerPlacement + ". " + player.getDisplayName(), ChatColor.GOLD + Integer.toString(score) + " Aufgaben " +
-                                        "geschafft", 10, 100,
+                        onlinePlayer.sendTitle(playerPlacement + ". " + team.getTeamName(), ChatColor.GOLD + Integer.toString(score) + " Tasks completed", 10, 100,
                                 20);
                         onlinePlayer.playSound(onlinePlayer.getLocation(), "minecraft:entity.player.levelup", 1, 1);
 
-                        TextComponent messsagePlacement = new TextComponent(playerPlacement + ". " + onlinePlayer.getDisplayName() + " - " + score);
-                        TextComponent messageInventory = new TextComponent(ChatColor.GREEN + " [Zeige Items]");
-                        messageInventory.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/showcollecteditems " + playerUUID));
+                        TextComponent messsagePlacement = new TextComponent(playerPlacement + ". " + team.getTeamName() + " - " + score);
+                        TextComponent messageInventory = new TextComponent(ChatColor.GREEN + " [Show Items]");
+                        messageInventory.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/showcollecteditems " + team));
 
                         //@TODO make inventory openable afterwards
                         //messsagePlacement.addExtra(messageInventory);
@@ -157,7 +141,7 @@ public class ShowResultsCommand implements CommandExecutor {
                     placement++;
                 }
 
-                inventory.setItem(placement, new ItemStack(itemsCollectedByPlayers.get(playerUUID).get(listcounter)));
+                inventory.setItem(placement, new ItemStack(itemsCollectedByTeam.get(team).get(listcounter)));
                 listcounter++;
                 placement++;
             }

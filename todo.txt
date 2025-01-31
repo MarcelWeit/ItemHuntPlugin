@@ -1,8 +1,8 @@
-- Teams
-- Show Results in Inventory
 - New Mode everyone collects the same item?
 - Display Item Picture in UI
 
-IDEAS
-- Item that teleports you in the air so you can fly from there
-- Item das man sammeln muss an den Namen hängen
+Teams:
+- Skip item doesnt work
+- Updraft Item aufbrauchen
+- Item einsammeln updraft item bekommen / letzte 5 Minuten unlimited jumps
+- Teams schneller updaten und nachricht senden

@@ -20,8 +20,6 @@ commands:
     permission: itemhuntplugin.results
   teams:
     description: Shows the teams
-    default: op
-    permission: itemhuntplugin.teams
   skipitem:
     description: Skips item by admin
     default: op

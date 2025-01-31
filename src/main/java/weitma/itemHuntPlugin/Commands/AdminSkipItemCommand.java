@@ -6,6 +6,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import weitma.itemHuntPlugin.ItemHuntPlugin;
+import weitma.itemHuntPlugin.Utils.TeamManager;
 
 public class AdminSkipItemCommand implements CommandExecutor {
 
@@ -30,10 +31,9 @@ public class AdminSkipItemCommand implements CommandExecutor {
                 return false;
             }
 
-            Material itemThatShouldveBeenCollected = plugin.getItemToCollect(target.getUniqueId());
+            Material itemThatShouldveBeenCollected = plugin.getItemToCollect(TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId()));
             plugin.successfullPickup(target, itemThatShouldveBeenCollected, false, true);
-            // older version where you just got a skip item
-            //target.getInventory().addItem(plugin.getSkipItem(Integer.parseInt(args[0])));
+
         }
 
         return true;

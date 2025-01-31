@@ -4,6 +4,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import weitma.itemHuntPlugin.ItemHuntPlugin;
+import weitma.itemHuntPlugin.Utils.TeamManager;
 
 public class StopChallengeCommand implements CommandExecutor {
 
@@ -17,6 +18,7 @@ public class StopChallengeCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
         plugin.resetChallenge();
+        TeamManager.getInstance().resetTeams();
 
         return true;
     }

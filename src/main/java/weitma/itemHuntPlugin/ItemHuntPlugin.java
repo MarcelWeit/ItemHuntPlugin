@@ -15,52 +15,42 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.checkerframework.checker.units.qual.A;
 import weitma.itemHuntPlugin.Commands.*;
 import weitma.itemHuntPlugin.Listeners.*;
+import weitma.itemHuntPlugin.Utils.Team;
+import weitma.itemHuntPlugin.Utils.TeamManager;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public final class ItemHuntPlugin extends JavaPlugin {
 
-    private static HashMap<UUID, Material> itemsToCollectByPlayers;
+    private static HashMap<Team, Material> itemsToCollectByTeam;
     public static final int BACKPACK_ID = 100000;
     public static final int SKIPITEM_ID = 100001;
     public static final int SPECIAL_ROCKET_ID = 1000002;
     public static final int UPDRAFT_ITEM = 1000003;
-    private final HashMap<UUID, ArrayList<ItemStack>> itemsCollectedByPlayers;
+    public static final int TEAM_ITEM = 1000004;
+    private final HashMap<Team, ArrayList<ItemStack>> itemsCollectedByTeam;
     private final HashMap<UUID, BossBar> bossBars;
-    private final HashMap<UUID, Inventory> backpackInventories;
+    private final HashMap<Team, Inventory> backpackInventoryForTeam;
     private boolean challengeStarted;
     private boolean challengeFinished;
     private int taskID;
     private ShowResultsCommand showResultsCommand;
     private String currentTimer;
-    private static HashMap<UUID, Integer> playerTeams = new HashMap<>();
-
-    public static final String[] teamNames = {
-            ChatColor.RED + "Team Red",
-            ChatColor.BLUE + "Team Blue",
-            ChatColor.GREEN + "Team Green",
-            ChatColor.YELLOW + "Team Yellow",
-            ChatColor.BLACK + "Team Black",
-            ChatColor.DARK_PURPLE + "Team Purple",
-            ChatColor.GOLD + "Team Orange",
-            ChatColor.LIGHT_PURPLE + "Team Pink",
-            ChatColor.WHITE + "Team White"
-    };
+    private HashMap<UUID, String> displayNames;
+    private boolean withUpdraftItem = false;
 
     public ItemHuntPlugin() {
-        this.backpackInventories = new HashMap<>();
+        this.backpackInventoryForTeam = new HashMap<>();
         this.challengeStarted = false;
         this.challengeFinished = false;
-        itemsToCollectByPlayers = new HashMap<>();
-        itemsCollectedByPlayers = new HashMap<>();
+        itemsToCollectByTeam = new HashMap<>();
+        itemsCollectedByTeam = new HashMap<>();
         bossBars = new HashMap<>();
-    }
-
-    public Material getItemToCollect(UUID player) {
-        return itemsToCollectByPlayers.get(player);
+        displayNames = new HashMap<>();
     }
 
     @Override
@@ -90,23 +80,27 @@ public final class ItemHuntPlugin extends JavaPlugin {
         resetChallenge();
     }
 
-    private void putItemToCollect(UUID player, Material item) {
-        itemsToCollectByPlayers.put(player, item);
+    private void putItemToCollect(Team team, Material item) {
+        itemsToCollectByTeam.put(team, item);
     }
 
-    private void addItemToCollectedByPlayer(UUID id, ItemStack item) {
-        if (itemsCollectedByPlayers.containsKey(id)) {
-            itemsCollectedByPlayers.get(id).add(item);
+    public Material getItemToCollect(Team team) {
+        return itemsToCollectByTeam.get(team);
+    }
+
+    private void addItemToCollectedByTeam(Team team, ItemStack item) {
+        if (itemsCollectedByTeam.containsKey(team)) {
+            itemsCollectedByTeam.get(team).add(item);
         } else {
             ArrayList<ItemStack> materials = new ArrayList<>();
             materials.add(item);
-            itemsCollectedByPlayers.put(id, materials);
+            itemsCollectedByTeam.put(team, materials);
         }
     }
 
     // New 1.21 items are included
     // Excluded: Silk Touch obtainables, Eggs, Music, Disc, End Items, Command, Unobtainable
-    public void generateNewRandomMaterialToCollect(UUID id) {
+    public void generateNewRandomMaterialToCollect(Team team) {
 
         List<Material> pickableItems = Arrays.stream(Material.values())
                 .filter(Material::isItem)
@@ -199,7 +193,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
 
                 .toList();
         Material material = pickableItems.get((int) (Math.random() * pickableItems.size()));
-        putItemToCollect(id, material);
+        putItemToCollect(team, material);
     }
 
     public void showItemToCollect(UUID playerID) {
@@ -209,7 +203,9 @@ public final class ItemHuntPlugin extends JavaPlugin {
         if (oldBossBar != null)
             oldBossBar.removeAll();
 
-        Material itemToCollect = getItemToCollect(playerID);
+        Bukkit.getLogger().info("ShowItem" + TeamManager.getInstance().getTeamOfPlayer(playerID).toString());
+
+        Material itemToCollect = getItemToCollect(TeamManager.getInstance().getTeamOfPlayer(playerID));
         String itemName = Arrays.stream(itemToCollect.name().split("_"))
                 .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1).toLowerCase())
                 .collect(Collectors.joining(" "));
@@ -230,14 +226,13 @@ public final class ItemHuntPlugin extends JavaPlugin {
         itemEntity.setPickupDelay(Integer.MAX_VALUE); // Prevent the item from being picked up
         player.addPassenger(itemEntity);
 
-        player.sendMessage("");
         TextComponent message = new TextComponent(ChatColor.DARK_AQUA + "Collect: ");
         TextComponent link = new TextComponent(ChatColor.DARK_AQUA + "" + ChatColor.UNDERLINE + "[" + itemName + "]");
         link.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://minecraft.wiki/w/" + itemNameForWiki));
         message.addExtra(link);
         player.spigot().sendMessage(message);
 
-        player.setPlayerListName(player.getPlayerListName() + ChatColor.GOLD + " [" + itemName + "]");
+        player.setPlayerListName(displayNames.get(playerID) + ChatColor.GOLD + " [" + itemName + "]");
     }
 
     public boolean isChallengeStarted() {
@@ -337,12 +332,13 @@ public final class ItemHuntPlugin extends JavaPlugin {
 
     public void resetChallenge() {
         stopTimer();
-        resetTeams();
         showResultsCommand.resetScores();
         showResultsCommand.setCurrentIndex(0);
         challengeFinished = false;
-        itemsToCollectByPlayers.clear();
-        itemsCollectedByPlayers.clear();
+        challengeStarted = false;
+        withUpdraftItem = false;
+        itemsToCollectByTeam.clear();
+        itemsCollectedByTeam.clear();
         Bukkit.getBossBars().forEachRemaining(bossBar -> bossBar.removeAll());
         for (BossBar bossBar : bossBars.values()) {
             bossBar.removeAll();
@@ -350,23 +346,22 @@ public final class ItemHuntPlugin extends JavaPlugin {
         }
         bossBars.clear();
         Bukkit.getOnlinePlayers().forEach(player -> {
-                    if (challengeStarted) {
-                        player.sendMessage(ChatColor.RED + "The challenge has been stopped!");
-                    }
-                    if (!player.getPassengers().isEmpty()) {
-                        player.getPassengers().forEach(passenger -> player.removePassenger(passenger));
-                    }
-                }
+            if (challengeStarted) {
+                player.sendMessage(ChatColor.RED + "The challenge has been stopped!");
+            }
+            if (!player.getPassengers().isEmpty()) {
+                player.getPassengers().forEach(passenger -> player.removePassenger(passenger));
+            }
+        }
         );
-        challengeStarted = false;
     }
 
     public boolean isChallengeFinished() {
         return challengeFinished;
     }
 
-    public HashMap<UUID, ArrayList<ItemStack>> getItemsCollectedByPlayers() {
-        return itemsCollectedByPlayers;
+    public HashMap<Team, ArrayList<ItemStack>> getItemsCollectedByTeam() {
+        return itemsCollectedByTeam;
     }
 
     public ItemStack getSkipItem(int amount) {
@@ -384,7 +379,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
     }
 
     public void skipItemToCollect(UUID uuid) {
-        ItemStack itemToCollect = new ItemStack(getItemToCollect(uuid));
+        ItemStack itemToCollect = new ItemStack(getItemToCollect(TeamManager.getInstance().getTeamOfPlayer(uuid)));
         Player p = Bukkit.getPlayer(uuid);
         p.getInventory().addItem(itemToCollect);
         successfullPickup(p, itemToCollect.getType(), true, false);
@@ -396,15 +391,15 @@ public final class ItemHuntPlugin extends JavaPlugin {
                 .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1).toLowerCase())
                 .collect(Collectors.joining(" "));
         if (!skippedByAdmin) {
-            player.sendMessage(ChatColor.GREEN + itemReadable + ChatColor.WHITE + " collected!");
+            for (Player playerOnline : Bukkit.getOnlinePlayers()) {
+                Team teamOfPlayer = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId());
+                playerOnline.sendMessage(teamOfPlayer.getColor() + teamOfPlayer.getTeamName() + ChatColor.WHITE + " collected " + itemReadable);
+            }
         } else {
-            player.sendMessage(ChatColor.RED + itemReadable + " was skipped by Admin!");
+            for (Player playerOnline : Bukkit.getOnlinePlayers()) {
+                playerOnline.sendMessage(ChatColor.RED + itemReadable + " was skipped by Admin for " + TeamManager.getInstance().getTeamOfPlayer(playerOnline.getUniqueId()).getTeamName() + "!");
+            }
         }
-
-        player.getPassengers().forEach(passenger -> {
-            passenger.setVisibleByDefault(false);
-            player.removePassenger(passenger);
-        });
 
         ItemStack itemPickedUpStack = new ItemStack(itemPickedUp);
         ItemMeta itemPickedUpStackMeta = itemPickedUpStack.getItemMeta();
@@ -416,29 +411,43 @@ public final class ItemHuntPlugin extends JavaPlugin {
             itemPickedUpStackMeta.setLore(Arrays.asList("Collected at ", currentTimer));
         }
         itemPickedUpStack.setItemMeta(itemPickedUpStackMeta);
-
+        Team teamOfPlayer = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId());
         if (!skippedByAdmin) {
-            addItemToCollectedByPlayer(player.getUniqueId(), itemPickedUpStack);
+            addItemToCollectedByTeam(teamOfPlayer, itemPickedUpStack);
         }
-        generateNewRandomMaterialToCollect(player.getUniqueId());
-        showItemToCollect(player.getUniqueId());
-        player.playSound(player.getLocation(), "entity.experience_orb.pickup", 1, 1);
+        generateNewRandomMaterialToCollect(teamOfPlayer);
+
+        for(UUID uuidInTeam : TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId()).getTeamMembers()) {
+            Player playerInTeam = Bukkit.getPlayer(uuidInTeam);
+            assert playerInTeam != null;
+            playerInTeam.getPassengers().forEach(passenger -> {
+                passenger.setVisibleByDefault(false);
+                player.removePassenger(passenger);
+            });
+
+            showItemToCollect(uuidInTeam);
+            playerInTeam.playSound(player.getLocation(), "entity.experience_orb.pickup", 1, 1);
+
+            if(isWithUpdraftItem()){
+                playerInTeam.getInventory().addItem(getUpdraftItem(1));
+            }
+        }
     }
 
-    public ItemStack createBackpack(UUID playerID) {
+    public ItemStack createBackpack(Team team) {
         ItemStack backpack = new ItemStack(Material.BUNDLE);
         ItemMeta meta = backpack.getItemMeta();
-        meta.setDisplayName(ChatColor.GOLD + "Backpack");
+        meta.setDisplayName(ChatColor.GOLD + "Backpack " + team.getTeamName());
         meta.setUnbreakable(true);
         meta.setCustomModelData(BACKPACK_ID);
         meta.setLore(Arrays.asList(ChatColor.GRAY + "Right-click to open"));
         backpack.setItemMeta(meta);
-        backpackInventories.put(playerID, Bukkit.createInventory(Bukkit.getPlayer(playerID), 27, Bukkit.getPlayer(playerID).getName() + "'s Backpack"));
+        backpackInventoryForTeam.put(team, Bukkit.createInventory(null, 54, "Backpack of " + team.getTeamName()));
         return backpack;
     }
 
-    public Inventory getBackpackInventory(UUID playerID) {
-        return backpackInventories.get(playerID);
+    public Inventory getBackpackInventory(Team team) {
+        return backpackInventoryForTeam.get(team);
     }
 
     public ItemStack getSpecialRocket(){
@@ -449,25 +458,6 @@ public final class ItemHuntPlugin extends JavaPlugin {
         return rocket;
     }
 
-    public void joinTeam(UUID playerID, int team){
-        playerTeams.put(playerID, team);
-    }
-
-    public ArrayList<UUID> getPlayersInTeam(Integer teamNumber){
-        return playerTeams.entrySet().stream()
-                .filter(entry -> entry.getValue().equals(teamNumber))
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
-    public boolean isEveryoneInATeam(){
-        return Bukkit.getOnlinePlayers().stream().allMatch(player -> playerTeams.containsKey(player.getUniqueId()));
-    }
-
-    public void resetTeams(){
-        playerTeams.clear();
-    }
-
     public ItemStack getUpdraftItem(int amount){
         ItemStack updraft = new ItemStack(Material.FEATHER, amount);
         ItemMeta updraftMeta = updraft.getItemMeta();
@@ -476,5 +466,22 @@ public final class ItemHuntPlugin extends JavaPlugin {
         updraftMeta.setCustomModelData(UPDRAFT_ITEM);
         updraft.setItemMeta(updraftMeta);
         return updraft;
+    }
+
+    public String getCurrentTimer() {
+        return "[" + currentTimer + "] ";
+    }
+
+    public void setPlayerListName(String listName, UUID playerID){
+        displayNames.put(playerID, listName);
+        Bukkit.getPlayer(playerID).setPlayerListName(listName);
+    }
+
+    public boolean isWithUpdraftItem() {
+        return withUpdraftItem;
+    }
+
+    public void setWithUpdraftItem(boolean withUpdraftItem) {
+        this.withUpdraftItem = withUpdraftItem;
     }
 }
