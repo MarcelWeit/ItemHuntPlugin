@@ -18,22 +18,15 @@ public class GiveSpecialRocketCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
-        if (sender instanceof Player player){
 
-            if(args.length != 1){
-                sender.sendMessage("Usage: /givespecialrocket <player>");
-                return false;
-            }
-
-            String playerName = args[0];
-
-            Player playerToSendTo = Bukkit.getPlayer(playerName);
-
-            playerToSendTo.getInventory().addItem(plugin.getSpecialRocket());
-
-            plugin.getSpecialRocket();
-
+        if (args.length != 1) {
+            sender.sendMessage("Usage: /givespecialrocket <player>");
+            return false;
         }
+
+        String playerName = args[0];
+        Player playerToSendTo = Bukkit.getPlayer(playerName);
+        playerToSendTo.getInventory().addItem(plugin.getSpecialRocket());
 
         return true;
     }
