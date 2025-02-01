@@ -2,16 +2,25 @@ package weitma.itemHuntPlugin.Listeners;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import weitma.itemHuntPlugin.Commands.ShowCollectedItemsCommand;
+import weitma.itemHuntPlugin.Commands.ShowTeamsCommand;
 import weitma.itemHuntPlugin.ItemHuntPlugin;
+import weitma.itemHuntPlugin.Utils.Team;
+import weitma.itemHuntPlugin.Utils.TeamManager;
+
+import java.util.HashMap;
 
 public class InventoryClickListener implements Listener {
 
     private final ItemHuntPlugin plugin;
+    private HashMap<Player, Integer> currentInvIndex = new HashMap<>();
 
     public InventoryClickListener(ItemHuntPlugin plugin){
         this.plugin = plugin;
@@ -20,79 +29,98 @@ public class InventoryClickListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
 
+        Inventory inventory = event.getClickedInventory();
+
+        Player player = (Player) event.getWhoClicked();
+
+        ItemStack currentItem = event.getCurrentItem();
+
+        if(currentItem == null){
+            Bukkit.getLogger().info("No item clicked");
+            return;
+        }
+
         if(ChatColor.stripColor(event.getView().getTitle()).equals("Teams")){
 
             event.setCancelled(true);
 
             if(event.getClick().isRightClick()) return;
 
-            Player player = (Player) event.getWhoClicked();
-
-            if(event.getCurrentItem() == null){
-                Bukkit.getLogger().info("No item clicked");
+            Team team = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId());
+            if(team != null){
+                team.removePlayer(player.getUniqueId());
                 return;
             }
 
-            switch(event.getCurrentItem().getType()){
+            switch(currentItem.getType()){
                 case RED_WOOL:
-                    player.setPlayerListName(ChatColor.RED + "[Red] " + ChatColor.WHITE + player.getName());
-                    player.sendMessage(ChatColor.RED + "You joined Team Red!");
-                    plugin.joinTeam(player.getUniqueId(), 1);
+                    plugin.setPlayerListName(ChatColor.RED + "[Red] " + ChatColor.WHITE + player.getName(), player.getUniqueId());
+                    TeamManager.getInstance().joinTeam(player.getUniqueId(), TeamManager.getInstance().getTeam(0));
                     break;
                 case BLUE_WOOL:
-                    player.setPlayerListName(ChatColor.BLUE + "[Blue] " + ChatColor.WHITE + player.getName());
-                    player.sendMessage(ChatColor.BLUE + "You joined Team Blue!");
-                    plugin.joinTeam(player.getUniqueId(), 2);
+                    plugin.setPlayerListName(ChatColor.BLUE + "[Blue] " + ChatColor.WHITE + player.getName(), player.getUniqueId());
+                    TeamManager.getInstance().joinTeam(player.getUniqueId(), TeamManager.getInstance().getTeam(1));
                     break;
                 case GREEN_WOOL:
-                    player.setPlayerListName(ChatColor.GREEN + "[Green] " + ChatColor.WHITE + player.getName());
-                    player.sendMessage(ChatColor.GREEN +"You joined Team Green!");
-                    plugin.joinTeam(player.getUniqueId(), 3);
+                    plugin.setPlayerListName(ChatColor.GREEN + "[Green] " + ChatColor.WHITE + player.getName(), player.getUniqueId());
+                    TeamManager.getInstance().joinTeam(player.getUniqueId(), TeamManager.getInstance().getTeam(2));
                     break;
                 case YELLOW_WOOL:
-                    player.setPlayerListName(ChatColor.YELLOW + "[Yellow] " + ChatColor.WHITE + player.getName());
-                    player.sendMessage(ChatColor.YELLOW + "You joined Team Yellow!");
-                    plugin.joinTeam(player.getUniqueId(), 4);
+                    plugin.setPlayerListName(ChatColor.YELLOW + "[Yellow] " + ChatColor.WHITE + player.getName(), player.getUniqueId());
+                    TeamManager.getInstance().joinTeam(player.getUniqueId(), TeamManager.getInstance().getTeam(3));
                     break;
                 case BLACK_WOOL:
-                    player.setPlayerListName(ChatColor.BLACK + "[Black] " + ChatColor.WHITE + player.getName());
-                    player.sendMessage(ChatColor.BLACK + "You joined Team Black!");
-                    plugin.joinTeam(player.getUniqueId(), 5);
+                    plugin.setPlayerListName(ChatColor.BLACK + "[Black] " + ChatColor.WHITE + player.getName(), player.getUniqueId());
+                    TeamManager.getInstance().joinTeam(player.getUniqueId(), TeamManager.getInstance().getTeam(4));
                     break;
                 case PURPLE_WOOL:
-                    player.setPlayerListName(ChatColor.DARK_PURPLE + "[Purple] " + ChatColor.WHITE + player.getName());
-                    player.sendMessage(ChatColor.DARK_PURPLE + "" + ChatColor.DARK_PURPLE + "You joined Team Purple!");
-                    plugin.joinTeam(player.getUniqueId(), 6);
+                    plugin.setPlayerListName(ChatColor.DARK_PURPLE + "[Purple] " + ChatColor.WHITE + player.getName(), player.getUniqueId());
+                    TeamManager.getInstance().joinTeam(player.getUniqueId(), TeamManager.getInstance().getTeam(5));
                     break;
                 case ORANGE_WOOL:
-                    player.setPlayerListName(ChatColor.GOLD + "[Orange] " + ChatColor.WHITE + player.getName());
-                    player.sendMessage(ChatColor.GOLD + "You joined Team Orange!");
-                    plugin.joinTeam(player.getUniqueId(), 7);
+                    plugin.setPlayerListName(ChatColor.GOLD + "[Orange] " + ChatColor.WHITE + player.getName(), player.getUniqueId());
+                    TeamManager.getInstance().joinTeam(player.getUniqueId(), TeamManager.getInstance().getTeam(6));
                     break;
                 case PINK_WOOL:
-                    player.setPlayerListName(ChatColor.LIGHT_PURPLE + "[Pink] " + ChatColor.WHITE + player.getName());
-                    player.sendMessage(ChatColor.LIGHT_PURPLE + "You joined Team Pink!");
-                    plugin.joinTeam(player.getUniqueId(), 8);
+                    plugin.setPlayerListName(ChatColor.LIGHT_PURPLE + "[Pink] " + ChatColor.WHITE + player.getName(), player.getUniqueId());
+                    TeamManager.getInstance().joinTeam(player.getUniqueId(), TeamManager.getInstance().getTeam(7));
                     break;
                 case WHITE_WOOL:
-                    player.setPlayerListName(ChatColor.WHITE + "[White] " + ChatColor.WHITE + player.getName());
-                    player.sendMessage(ChatColor.WHITE + "You joined Team White!");
-                    plugin.joinTeam(player.getUniqueId(), 9);
+                    plugin.setPlayerListName(ChatColor.WHITE + "[White] " + ChatColor.WHITE + player.getName(), player.getUniqueId());
+                    TeamManager.getInstance().joinTeam(player.getUniqueId(), TeamManager.getInstance().getTeam(8));
                     break;
                 default:
                     player.sendMessage("You didn't join any team!");
                     break;
             }
+            for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                onlinePlayer.sendMessage(player.getName() + " joined " + TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId()).getTeamName());
+            }
             Bukkit.dispatchCommand(player, "teams");
 
-        } else if(ChatColor.stripColor(event.getView().getTitle()).equals("Items collected")){
+        } else if(ChatColor.stripColor(event.getView().getTitle()).startsWith("Items collected")){
             event.setCancelled(true);
-        } else if(ChatColor.stripColor(event.getView().getTitle()).endsWith("Backpack")){
-            ItemStack item = event.getCurrentItem();
-            if (item != null && item.getItemMeta() != null && item.getItemMeta().hasCustomModelData() && item.getItemMeta().getCustomModelData() == plugin.BACKPACK_ID) {
+
+            if(!currentInvIndex.containsKey(player)) {
+                currentInvIndex.put(player, 0);
+            }
+
+            if(currentItem.getType().equals(Material.STONE_BUTTON)){ //left
+                currentInvIndex.put(player, currentInvIndex.get(player) - 1);
+            }
+
+            if(currentItem.getType().equals(Material.OAK_BUTTON)){ //right
+                currentInvIndex.put(player, currentInvIndex.get(player) + 1);
+            }
+            ShowCollectedItemsCommand.openInventory(player, currentInvIndex.get(player));
+
+        } else if(ChatColor.stripColor(event.getView().getTitle()).startsWith("Backpack")){
+            if (currentItem.getItemMeta() != null && currentItem.getItemMeta().hasCustomModelData() && currentItem.getItemMeta().getCustomModelData() == ItemHuntPlugin.BACKPACK_ID) {
                 event.getWhoClicked().sendMessage(ChatColor.RED + "Cant put Backpack in itself!");
                 event.setCancelled(true);
             }
+        } else if(inventory != null && inventory.equals(ShowTeamsCommand.getTeamInventory())){
+            ShowTeamsCommand.updateInventory();
         }
     }
 
