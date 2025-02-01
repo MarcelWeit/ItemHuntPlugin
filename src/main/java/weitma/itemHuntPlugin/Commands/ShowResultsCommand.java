@@ -31,27 +31,11 @@ public class ShowResultsCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
-        //        boolean isTest = false;
-        //        if(args == null){
-        //            isTest = true;
-        //        }
-
         if (plugin.isChallengeFinished()) {
 
             if (sortedScores == null) {
 
                 HashMap<UUID, ArrayList<ItemStack>> itemsCollectedByPlayers = plugin.getItemsCollectedByPlayers();
-
-                //                if (isTest) {
-                //                    for (int a = 1; a < 4; a++) {
-                //                        UUID randomID = UUID.randomUUID();
-                //                        itemsCollectedByPlayers.put(randomID, new ArrayList<>(List.of(new ItemStack(Material.ANDESITE))));
-                //                        for (int i = 0; i < a + 120; i++) {
-                //                            itemsCollectedByPlayers.get(randomID).add(new ItemStack(Material.ANDESITE));
-                //                        }
-                //                    }
-                //                }
-
                 HashMap<UUID, Integer> scores = new HashMap<>();
 
                 itemsCollectedByPlayers.forEach((uuid, materials) -> {
@@ -71,7 +55,7 @@ public class ShowResultsCommand implements CommandExecutor {
                 sender.sendMessage("All players have been displayed!");
                 currentIndex = 0; // Reset index if all players have been displayed
             }
-        } else {
+        } else if (plugin.isChallengeStarted()){
             sender.sendMessage("The challenge has not finished yet!");
         }
         return true;
