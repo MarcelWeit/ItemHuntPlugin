@@ -15,7 +15,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.checkerframework.checker.units.qual.A;
 import weitma.itemHuntPlugin.Commands.*;
 import weitma.itemHuntPlugin.Listeners.*;
 import weitma.itemHuntPlugin.Utils.Team;
@@ -26,12 +25,12 @@ import java.util.stream.Collectors;
 
 public final class ItemHuntPlugin extends JavaPlugin {
 
-    private static HashMap<Team, Material> itemsToCollectByTeam;
     public static final int BACKPACK_ID = 100000;
     public static final int SKIPITEM_ID = 100001;
     public static final int SPECIAL_ROCKET_ID = 1000002;
     public static final int UPDRAFT_ITEM = 1000003;
     public static final int TEAM_ITEM = 1000004;
+    private static HashMap<Team, Material> itemsToCollectByTeam;
     private final HashMap<Team, ArrayList<ItemStack>> itemsCollectedByTeam;
     private final HashMap<UUID, BossBar> bossBars;
     private final HashMap<Team, Inventory> backpackInventoryForTeam;
@@ -65,6 +64,8 @@ public final class ItemHuntPlugin extends JavaPlugin {
         getCommand("teams").setExecutor(new ShowTeamsCommand(this));
         getCommand("skipitem").setExecutor(new AdminSkipItemCommand(this));
         getCommand("giverocket").setExecutor(new GiveSpecialRocketCommand(this));
+        getCommand("showcollecteditems").setExecutor(new ShowCollectedItemsCommand(this));
+        getCommand("resetteams").setExecutor(new resetTeamsCommand());
 
         getServer().getPluginManager().registerEvents(new ItemCollectListener(this), this);
         getServer().getPluginManager().registerEvents(new ItemUseListener(this), this);
@@ -78,10 +79,6 @@ public final class ItemHuntPlugin extends JavaPlugin {
     public void onDisable() {
         // Plugin shutdown logic
         resetChallenge();
-    }
-
-    private void putItemToCollect(Team team, Material item) {
-        itemsToCollectByTeam.put(team, item);
     }
 
     public Material getItemToCollect(Team team) {
@@ -192,8 +189,11 @@ public final class ItemHuntPlugin extends JavaPlugin {
                 .filter(material -> !material.name().contains("GHAST"))
 
                 .toList();
+
+        // pickable 961 items
+        // material.values 1537 items
         Material material = pickableItems.get((int) (Math.random() * pickableItems.size()));
-        putItemToCollect(team, material);
+        itemsToCollectByTeam.put(team, material);
     }
 
     public void showItemToCollect(UUID playerID) {
@@ -364,6 +364,10 @@ public final class ItemHuntPlugin extends JavaPlugin {
         return itemsCollectedByTeam;
     }
 
+    public ArrayList<ItemStack> getItemsCollectedByTeam(Team team) {
+        return itemsCollectedByTeam.get(team);
+    }
+
     public ItemStack getSkipItem(int amount) {
         ItemStack skipItem = new ItemStack(Material.BARRIER, amount); // Choose your item type
         ItemMeta meta = skipItem.getItemMeta();
@@ -393,7 +397,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
         if (!skippedByAdmin) {
             for (Player playerOnline : Bukkit.getOnlinePlayers()) {
                 Team teamOfPlayer = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId());
-                playerOnline.sendMessage(teamOfPlayer.getColor() + teamOfPlayer.getTeamName() + ChatColor.WHITE + " collected " + itemReadable);
+                playerOnline.sendMessage(teamOfPlayer.getChatColor() + teamOfPlayer.getTeamName() + " (" + player.getName() + ") " + ChatColor.WHITE + "collected " + itemReadable);
             }
         } else {
             for (Player playerOnline : Bukkit.getOnlinePlayers()) {
@@ -406,9 +410,9 @@ public final class ItemHuntPlugin extends JavaPlugin {
         assert itemPickedUpStackMeta != null;
 
         if (wasSkipItem) {
-            itemPickedUpStackMeta.setLore(Arrays.asList("Collected at ", currentTimer, " (Skipped)"));
+            itemPickedUpStackMeta.setLore(Arrays.asList("Collected by " + player.getName() + " at", currentTimer, " (Skipped)"));
         } else {
-            itemPickedUpStackMeta.setLore(Arrays.asList("Collected at ", currentTimer));
+            itemPickedUpStackMeta.setLore(Arrays.asList("Collected by " + player.getName() + " at", currentTimer));
         }
         itemPickedUpStack.setItemMeta(itemPickedUpStackMeta);
         Team teamOfPlayer = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId());

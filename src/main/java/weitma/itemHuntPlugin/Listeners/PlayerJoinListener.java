@@ -60,7 +60,8 @@ public class PlayerJoinListener implements Listener {
             event.setJoinMessage(ChatColor.YELLOW + "Rühreienthusiast joined the game");
         }
         if (player.getName().equals("Weitii")) {
-            event.setJoinMessage(ChatColor.YELLOW + "Jugendlicher joined the game" + "\uE000");
+            event.setJoinMessage(ChatColor.YELLOW + "Jugendlicher joined the game" ); // + "\uE000"
+//            player.sendMessage("\uE001");
         }
         if (player.getName().equals("Peeeeest")) {
             event.setJoinMessage(ChatColor.YELLOW + "Rocket League GrandChamp joined the game");

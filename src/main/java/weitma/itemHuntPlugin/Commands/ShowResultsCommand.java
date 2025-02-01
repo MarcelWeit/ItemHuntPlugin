@@ -15,6 +15,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import weitma.itemHuntPlugin.ItemHuntPlugin;
 import weitma.itemHuntPlugin.Utils.Team;
+import weitma.itemHuntPlugin.Utils.TeamManager;
 
 import java.util.*;
 
@@ -23,38 +24,24 @@ public class ShowResultsCommand implements CommandExecutor {
     private final ItemHuntPlugin plugin;
     private int currentIndex = 0;
     private List<Map.Entry<Team, Integer>> sortedScores;
+    private static HashMap<Team, Inventory> teamResults;
 
     public ShowResultsCommand(ItemHuntPlugin plugin) {
         Bukkit.getLogger().info("ShowResultsCommand created");
         this.plugin = plugin;
+        teamResults = new HashMap<>();
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
         if (plugin.isChallengeFinished()) {
-
             if (sortedScores == null) {
-
-                HashMap<Team, ArrayList<ItemStack>> itemsCollectedByTeam = plugin.getItemsCollectedByTeam();
-
-                HashMap<Team, Integer> scores = new HashMap<>();
-
-                itemsCollectedByTeam.forEach((team, materials) -> {
-                    scores.put(team, materials.size());
-                });
-
-                sortedScores = scores.entrySet().stream()
-                        .sorted(Map.Entry.comparingByValue())
-                        .toList();
+                initializeScores();
             }
-
             if (currentIndex < sortedScores.size()) {
-                Map.Entry<Team, Integer> entry = sortedScores.get(currentIndex);
-                currentIndex++;
-                showResultsAsInventory(entry, plugin.getItemsCollectedByTeam());
+                displayNextTeamResults();
             } else {
-                sender.sendMessage("All players have been displayed!");
                 currentIndex = 0; // Reset index if all players have been displayed
             }
         } else {
@@ -63,10 +50,28 @@ public class ShowResultsCommand implements CommandExecutor {
         return true;
     }
 
+    private void initializeScores() {
+        HashMap<Team, ArrayList<ItemStack>> itemsCollectedByTeam = plugin.getItemsCollectedByTeam();
+        HashMap<Team, Integer> scores = new HashMap<>();
+        itemsCollectedByTeam.forEach((team, materials) -> {
+            scores.put(team, materials.size());
+        });
+        sortedScores = scores.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue())
+                .toList();
+    }
+
+    private void displayNextTeamResults() {
+        Map.Entry<Team, Integer> entry = sortedScores.get(currentIndex);
+        currentIndex++;
+        showResultsAsInventory(entry, plugin.getItemsCollectedByTeam());
+    }
+
     private void showResultsAsInventory(Map.Entry<Team, Integer> entry, HashMap<Team, ArrayList<ItemStack>> itemsCollectedByTeam) {
         Team team = entry.getKey();
         int score = entry.getValue();
 
+        // Create inventory
         Inventory inventory = Bukkit.createInventory(null, 54, "Items collected");
         ItemStack whitePane = new ItemStack(Material.WHITE_STAINED_GLASS_PANE);
         ItemMeta whitePaneMeta = whitePane.getItemMeta();
@@ -87,6 +92,7 @@ public class ShowResultsCommand implements CommandExecutor {
             inventory.setItem(i, blackPane);
         }
 
+        // open inventory for all Players
         for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
             onlinePlayer.openInventory(inventory);
         }
@@ -116,16 +122,19 @@ public class ShowResultsCommand implements CommandExecutor {
 
                         TextComponent messsagePlacement = new TextComponent(playerPlacement + ". " + team.getTeamName() + " - " + score);
                         TextComponent messageInventory = new TextComponent(ChatColor.GREEN + " [Show Items]");
-                        messageInventory.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/showcollecteditems " + team));
+                        messageInventory.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+                                "/showcollecteditems " + TeamManager.getInstance().getTeamIndex(team.getTeamName()      ) + " " + onlinePlayer.getUniqueId()));
 
-                        //@TODO make inventory openable afterwards
-                        //messsagePlacement.addExtra(messageInventory);
+                        messsagePlacement.addExtra(messageInventory);
                         onlinePlayer.spigot().sendMessage(messsagePlacement);
                     }
+
+                    teamResults.put(team, inventory);
 
                     return;
                 }
 
+                // reset the inventory on second page
                 if (placement % 53 == 0) { //second page
                     for (int c = 0; c < 9; c++) {
                         inventory.setItem(c, whitePane);
@@ -136,16 +145,18 @@ public class ShowResultsCommand implements CommandExecutor {
                     placement = 10;
                 }
 
+                // skip two blank spaces in inventory
                 if (skipSpaces.contains(placement)) {
                     placement++;
                     placement++;
                 }
 
+                // add the item to the current place in inventory and increase the counters
                 inventory.setItem(placement, new ItemStack(itemsCollectedByTeam.get(team).get(listcounter)));
                 listcounter++;
                 placement++;
             }
-        }.runTaskTimer(plugin, 0L, 10L); // 0L initial delay, 20L (1 second) between iterations
+        }.runTaskTimer(plugin, 0L, 1L); // 0L initial delay, 20L (1 second) between iterations
     }
 
     public void setCurrentIndex(int currentIndex) {
@@ -154,5 +165,11 @@ public class ShowResultsCommand implements CommandExecutor {
 
     public void resetScores() {
         this.sortedScores = null;
+        this.currentIndex = 0;
+        ShowResultsCommand.teamResults.clear();
+    }
+
+    public static Inventory getTeamResults(Team team) {
+        return teamResults.get(team);
     }
 }

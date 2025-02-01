@@ -99,6 +99,7 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
             if (!withHunger) {
                 player.setFoodLevel(20);
             }
+            player.setHealth(20);
 
         });
 

@@ -100,4 +100,12 @@ public class TeamManager {
         return teamList.get(index);
     }
 
+    public int getTeamIndex(String teamName) {
+        for(int i=0; i<availableTeams.length; i++){
+            if(teamName.equalsIgnoreCase(availableTeams[i])){
+                return i;
+            }
+        }
+        return -1;
+    }
 }

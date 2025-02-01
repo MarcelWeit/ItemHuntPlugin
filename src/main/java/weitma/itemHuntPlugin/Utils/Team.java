@@ -11,12 +11,12 @@ public class Team {
 
     private final HashSet<UUID> teamMembers;
     private final String teamName;
-    private final ChatColor color;
+    private final ChatColor chatColor;
 
-    public Team(String teamName, ChatColor color){
+    public Team(String teamName, ChatColor chatColor){
         this.teamName = teamName;
         teamMembers = new HashSet<>();
-        this.color = color;
+        this.chatColor = chatColor;
     }
 
     public void addPlayer(UUID player){
@@ -49,19 +49,19 @@ public class Team {
         return teamName;
     }
 
-    public ChatColor getColor(){
-        return color;
+    public ChatColor getChatColor(){
+        return chatColor;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Team team)) return false;
-        return Objects.equals(teamMembers, team.teamMembers) && Objects.equals(teamName, team.teamName);
+        return Objects.equals(teamMembers, team.teamMembers) && Objects.equals(teamName, team.teamName) && chatColor == team.chatColor;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(teamMembers, teamName);
+        return Objects.hash(teamMembers, teamName, chatColor);
     }
 }
