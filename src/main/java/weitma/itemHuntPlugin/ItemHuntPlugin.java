@@ -59,13 +59,12 @@ public final class ItemHuntPlugin extends JavaPlugin {
         showResultsCommand = new ShowResultsCommand(this);
 
         getCommand("startchallenge").setExecutor(new StartChallengeCommand(this));
-        getCommand("stopchallenge").setExecutor(new StopChallengeCommand(this));
         getCommand("results").setExecutor(showResultsCommand);
         getCommand("teams").setExecutor(new ShowTeamsCommand(this));
         getCommand("skipitem").setExecutor(new AdminSkipItemCommand(this));
         getCommand("giverocket").setExecutor(new GiveSpecialRocketCommand(this));
         getCommand("showcollecteditems").setExecutor(new ShowCollectedItemsCommand(this));
-        getCommand("resetteams").setExecutor(new resetTeamsCommand());
+        getCommand("resetchallenge").setExecutor(new resetChallengeCommand(this));
 
         getServer().getPluginManager().registerEvents(new ItemCollectListener(this), this);
         getServer().getPluginManager().registerEvents(new ItemUseListener(this), this);
@@ -316,7 +315,6 @@ public final class ItemHuntPlugin extends JavaPlugin {
                 });
             }
         }));
-        challengeStarted = false;
         challengeFinished = true;
         stopTimer();
         Bukkit.getBossBars().forEachRemaining(bossBar -> bossBar.removeAll());
@@ -346,9 +344,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
         }
         bossBars.clear();
         Bukkit.getOnlinePlayers().forEach(player -> {
-            if (challengeStarted) {
-                player.sendMessage(ChatColor.RED + "The challenge has been stopped!");
-            }
+            player.sendMessage(ChatColor.RED + "The challenge has been reset!");
             if (!player.getPassengers().isEmpty()) {
                 player.getPassengers().forEach(passenger -> player.removePassenger(passenger));
             }
@@ -432,7 +428,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
             showItemToCollect(uuidInTeam);
             playerInTeam.playSound(player.getLocation(), "entity.experience_orb.pickup", 1, 1);
 
-            if(isWithUpdraftItem()){
+            if(isWithUpdraftItem() && !wasSkipItem){
                 playerInTeam.getInventory().addItem(getUpdraftItem(1));
             }
         }

@@ -34,8 +34,10 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
             return false;
         }
 
+        String usage = "Usage: /startchallenge <seconds> <skipItems> <elytra(yes/no)> <hunger(yes/no)> <updraftitems>";
+
         if (args.length != 5) {
-            sender.sendMessage(ChatColor.RED + "Usage: /startchallenge <seconds> <skipItems> <elytra(yes/no)> <hunger(yes/no)> <updraftitems>");
+            sender.sendMessage(ChatColor.RED + usage);
             return false;
         }
 
@@ -44,7 +46,7 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
             Integer.parseInt(args[1]);
             Integer.parseInt(args[4]);
         } catch (NumberFormatException e) {
-            sender.sendMessage(ChatColor.RED + "Usage: /startchallenge <seconds> <skipItems>");
+            sender.sendMessage(ChatColor.RED + usage);
             return false;
         }
 
@@ -58,11 +60,15 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
             plugin.setWithUpdraftItem(true);
         }
 
+        if (plugin.isChallengeFinished()) {
+            sender.sendMessage(ChatColor.RED + "The challenge has finished already!");
+            return false;
+        }
+
         if (plugin.isChallengeStarted()) {
             sender.sendMessage(ChatColor.RED + "The challenge has already started!");
             return false;
         }
-        plugin.resetChallenge();
         plugin.setChallengeStarted(true);
 
         if (!withHunger) {
@@ -120,6 +126,8 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
             return List.of("yes", "no");
         } else if (length == 4) {
             return List.of("yes", "no");
+        } else if (length == 5) {
+        return List.of("1", "2", "3", "4", "5", "6", "7");
         }
         return null;
     }

@@ -18,7 +18,6 @@ public class GiveSpecialRocketCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
-
         if (args.length != 1) {
             sender.sendMessage("Usage: /givespecialrocket <player>");
             return false;

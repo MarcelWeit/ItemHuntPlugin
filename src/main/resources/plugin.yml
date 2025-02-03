@@ -10,10 +10,10 @@ commands:
       - anzahlSkipItems: int
     default: op
     permission: itemhuntplugin.startchallenge
-  stopchallenge:
-    description: Stops the challenge
+  resetchallenge:
+    description: Resets the challenge
     default: op
-    permission: itemhuntplugin.stopchallenge
+    permission: itemhuntplugin.resetchallenge
   results:
     description: Shows the results
     default: op
