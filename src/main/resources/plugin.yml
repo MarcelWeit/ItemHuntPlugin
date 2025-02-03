@@ -5,9 +5,6 @@ api-version: '1.21'
 commands:
   startchallenge:
     description: Starts the challenge
-    parameters:
-      - dauer: time
-      - anzahlSkipItems: int
     default: op
     permission: itemhuntplugin.startchallenge
   resetchallenge:

@@ -41,14 +41,6 @@ public class ShowCollectedItemsCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
-        Bukkit.getLogger().info("In Command");
-
-        Bukkit.getLogger().info(args.length + "");
-
-        for(String arg : args) {
-            Bukkit.getLogger().info(arg);
-        }
-
         UUID playerID = UUID.fromString(args[1]);
         int teamIndex = Integer.parseInt(args[0]);
 
@@ -57,11 +49,7 @@ public class ShowCollectedItemsCommand implements CommandExecutor {
 
         Team team = TeamManager.getInstance().getTeam(teamIndex);
 
-        Bukkit.getLogger().info(team.getTeamName());
-
         ArrayList<ItemStack> itemsCollectedByTeam = plugin.getItemsCollectedByTeam(team);
-
-        Bukkit.getLogger().info("Items collected by team: " + itemsCollectedByTeam.size());
 
         Iterator<ItemStack> it = itemsCollectedByTeam.iterator();
 
@@ -69,7 +57,6 @@ public class ShowCollectedItemsCommand implements CommandExecutor {
 
         int loopCount = 0;
         while (it.hasNext()) {
-            Bukkit.getLogger().info("while loop");
             Inventory inventory = createEmptyInventory(team.getTeamName());
             teamInventories.add(inventory);
             for (int i = 10; i < 53; i++) {
