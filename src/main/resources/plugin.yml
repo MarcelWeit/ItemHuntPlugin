@@ -23,11 +23,3 @@ commands:
     permission: itemhuntplugin.skipitem
   showcollecteditems:
     description: Shows the collected items
-  giverocket:
-    description: Gives a rocket
-    default: op
-    permission: itemhuntplugin.giverocket
-  resetteams:
-    description: Resets the teams
-    default: op
-    permission: itemhuntplugin.resetteams

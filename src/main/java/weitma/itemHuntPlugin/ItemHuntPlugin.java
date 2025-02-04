@@ -39,7 +39,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
     private int taskID;
     private ShowResultsCommand showResultsCommand;
     private String currentTimer;
-    private HashMap<UUID, String> displayNames;
+    private final HashMap<UUID, String> displayNames;
     private boolean withUpdraftItem = false;
 
     public ItemHuntPlugin() {
@@ -62,7 +62,6 @@ public final class ItemHuntPlugin extends JavaPlugin {
         getCommand("results").setExecutor(showResultsCommand);
         getCommand("teams").setExecutor(new ShowTeamsCommand(this));
         getCommand("skipitem").setExecutor(new AdminSkipItemCommand(this));
-        getCommand("giverocket").setExecutor(new GiveSpecialRocketCommand(this));
         getCommand("showcollecteditems").setExecutor(new ShowCollectedItemsCommand(this));
         getCommand("resetchallenge").setExecutor(new resetChallengeCommand(this));
 
@@ -348,6 +347,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
             if (!player.getPassengers().isEmpty()) {
                 player.getPassengers().forEach(passenger -> player.removePassenger(passenger));
             }
+            player.setDisplayName(player.getName());
         }
         );
     }
@@ -434,7 +434,10 @@ public final class ItemHuntPlugin extends JavaPlugin {
         }
     }
 
-    public ItemStack createBackpack(Team team) {
+    public ItemStack createBackpack(Team team, int size) throws IllegalArgumentException {
+        if(size % 9 != 0){
+            throw new IllegalArgumentException("Backpack-Size must be a multiple of 9");
+        }
         ItemStack backpack = new ItemStack(Material.BUNDLE);
         ItemMeta meta = backpack.getItemMeta();
         meta.setDisplayName(ChatColor.GOLD + "Backpack " + team.getTeamName());
@@ -442,7 +445,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
         meta.setCustomModelData(BACKPACK_ID);
         meta.setLore(Arrays.asList(ChatColor.GRAY + "Right-click to open"));
         backpack.setItemMeta(meta);
-        backpackInventoryForTeam.put(team, Bukkit.createInventory(null, 54, "Backpack of " + team.getTeamName()));
+        backpackInventoryForTeam.put(team, Bukkit.createInventory(null, size, "Backpack of " + team.getTeamName()));
         return backpack;
     }
 

@@ -7,6 +7,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import weitma.itemHuntPlugin.ItemHuntPlugin;
@@ -34,9 +35,11 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
             return false;
         }
 
-        String usage = "Usage: /startchallenge <seconds> <skipItems> <elytra(yes/no)> <hunger(yes/no)> <updraftitems>";
+        Player player = (Player) sender;
 
-        if (args.length != 5) {
+        String usage = "Usage: /startchallenge <seconds> <skipItems> <elytra(yes/no)> <hunger(yes/no)> <updraftitems> <backpacksize(n*9<=54)";
+
+        if (args.length != 6) {
             sender.sendMessage(ChatColor.RED + usage);
             return false;
         }
@@ -45,16 +48,31 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
             Integer.parseInt(args[0]);
             Integer.parseInt(args[1]);
             Integer.parseInt(args[4]);
+            Integer.parseInt(args[5]);
         } catch (NumberFormatException e) {
             sender.sendMessage(ChatColor.RED + usage);
             return false;
         }
 
         int seconds = Integer.parseInt(args[0]);
-        String skipItems = args[1];
+        int skipItems = Integer.parseInt(args[1]);
         boolean withElytra = args[2].equals("yes");
         boolean withHunger = args[3].equals("yes");
         int updraftItems = Integer.parseInt(args[4]);
+        int backpackSize = Integer.parseInt(args[5]);
+
+        if(skipItems < 0 || updraftItems < 0 || backpackSize < 0){
+            player.sendMessage("Online positive integers are allowed for skipitems, updraftitems and backpacksize");
+        }
+
+        if((!args[2].equals("yes") && !args[2].equals("no")) || (!args[3].equals("yes") && !args[3].equals("no"))){
+            sender.sendMessage(ChatColor.RED + usage);
+        }
+
+        if(backpackSize % 9 != 0 || backpackSize > 54){
+            player.sendMessage(ChatColor.RED + "Backpack-Size must be a multiple of 9 up to 54");
+            return false;
+        }
 
         if(updraftItems > 0){
             plugin.setWithUpdraftItem(true);
@@ -82,16 +100,19 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
             plugin.generateNewRandomMaterialToCollect(teamWithPlayer);
         }
 
-        Bukkit.getOnlinePlayers().forEach(player -> {
-            player.getInventory().clear();
+        Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
+            onlinePlayer.getInventory().clear();
 
-            player.sendMessage(ChatColor.GREEN + "The challenge has started!");
+            onlinePlayer.sendMessage(ChatColor.GREEN + "The challenge has started!");
 
-            plugin.showItemToCollect(player.getUniqueId());
+            plugin.showItemToCollect(onlinePlayer.getUniqueId());
 
-            player.getInventory().addItem(plugin.getSkipItem(Integer.parseInt(skipItems)));
-            player.getInventory().setItem(8, plugin.createBackpack(TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId())));
-            player.getInventory().addItem(plugin.getUpdraftItem(updraftItems));
+            onlinePlayer.getInventory().addItem(plugin.getSkipItem(skipItems));
+            if(backpackSize != 0) {
+                ItemStack backpack = plugin.createBackpack(TeamManager.getInstance().getTeamOfPlayer(onlinePlayer.getUniqueId()), backpackSize);
+                onlinePlayer.getInventory().setItem(8, backpack);
+            }
+            onlinePlayer.getInventory().addItem(plugin.getUpdraftItem(updraftItems));
 
             if (withElytra) {
                 ItemStack elytra = new ItemStack(Material.ELYTRA);
@@ -99,13 +120,13 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
                 assert elytraMeta != null;
                 elytraMeta.setUnbreakable(true);
                 elytra.setItemMeta(elytraMeta);
-                player.getInventory().setChestplate(elytra);
+                onlinePlayer.getInventory().setChestplate(elytra);
             }
 
             if (!withHunger) {
-                player.setFoodLevel(20);
+                onlinePlayer.setFoodLevel(20);
             }
-            player.setHealth(20);
+            onlinePlayer.setHealth(20);
 
         });
 

@@ -7,6 +7,7 @@ Teams:
 - Item einsammeln updraft item bekommen / letzte 5 Minuten unlimited jumps
 - Teams schneller updaten und nachricht senden
 
-
-27
-35
+Ideas:
+- Immer selben Items im Inventar
+- Blocks erstellen Monster
+- Ampel
