@@ -37,7 +37,6 @@ public class Team {
     }
 
     public int getPlayerCount(){
-        Bukkit.getLogger().info("[InTeamClass] Number of players in team " + teamName + ": " + teamMembers.size());
         return teamMembers.size();
     }
 

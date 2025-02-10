@@ -27,7 +27,6 @@ public class ShowResultsCommand implements CommandExecutor {
     private static HashMap<Team, Inventory> teamResults;
 
     public ShowResultsCommand(ItemHuntPlugin plugin) {
-        Bukkit.getLogger().info("ShowResultsCommand created");
         this.plugin = plugin;
         teamResults = new HashMap<>();
     }
@@ -156,7 +155,7 @@ public class ShowResultsCommand implements CommandExecutor {
                 listcounter++;
                 placement++;
             }
-        }.runTaskTimer(plugin, 0L, 1L); // 0L initial delay, 20L (1 second) between iterations
+        }.runTaskTimer(plugin, 0L, 10L); // 0L initial delay, 20L (1 second) between iterations
     }
 
     public void setCurrentIndex(int currentIndex) {

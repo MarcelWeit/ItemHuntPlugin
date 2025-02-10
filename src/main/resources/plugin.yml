@@ -23,3 +23,7 @@ commands:
     permission: itemhuntplugin.skipitem
   showcollecteditems:
     description: Shows the collected items
+  timer:
+    description: Pause or resume the timer
+    default: op
+    permission: itemhuntplugin.skipitem

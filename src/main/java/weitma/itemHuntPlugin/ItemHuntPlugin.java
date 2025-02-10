@@ -9,6 +9,8 @@ import org.bukkit.Sound;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -17,9 +19,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import weitma.itemHuntPlugin.Commands.*;
 import weitma.itemHuntPlugin.Listeners.*;
+import weitma.itemHuntPlugin.Utils.InGameTimer;
 import weitma.itemHuntPlugin.Utils.Team;
 import weitma.itemHuntPlugin.Utils.TeamManager;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,11 +40,11 @@ public final class ItemHuntPlugin extends JavaPlugin {
     private final HashMap<Team, Inventory> backpackInventoryForTeam;
     private boolean challengeStarted;
     private boolean challengeFinished;
-    private int taskID;
     private ShowResultsCommand showResultsCommand;
-    private String currentTimer;
     private final HashMap<UUID, String> displayNames;
     private boolean withUpdraftItem = false;
+    private static FileConfiguration messages;
+    private final InGameTimer inGameTimer;
 
     public ItemHuntPlugin() {
         this.backpackInventoryForTeam = new HashMap<>();
@@ -50,11 +54,16 @@ public final class ItemHuntPlugin extends JavaPlugin {
         itemsCollectedByTeam = new HashMap<>();
         bossBars = new HashMap<>();
         displayNames = new HashMap<>();
+        this.inGameTimer = new InGameTimer(this);
     }
 
     @Override
     public void onEnable() {
         // Plugin startup logic
+
+        String language = getConfig().getString("language", "en");
+        File languageFile = new File(getDataFolder(), "lang/messages_" + language + ".yml");
+        messages = YamlConfiguration.loadConfiguration(languageFile);
 
         showResultsCommand = new ShowResultsCommand(this);
 
@@ -64,12 +73,14 @@ public final class ItemHuntPlugin extends JavaPlugin {
         getCommand("skipitem").setExecutor(new AdminSkipItemCommand(this));
         getCommand("showcollecteditems").setExecutor(new ShowCollectedItemsCommand(this));
         getCommand("resetchallenge").setExecutor(new resetChallengeCommand(this));
+        getCommand("timer").setExecutor(new TimerCommands(inGameTimer));
 
         getServer().getPluginManager().registerEvents(new ItemCollectListener(this), this);
         getServer().getPluginManager().registerEvents(new ItemUseListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this);
         getServer().getPluginManager().registerEvents(new InventoryClickListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerDeathListener(), this);
+
 
     }
 
@@ -185,6 +196,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
                 .filter(material -> !material.name().contains("MYCELIA"))
                 .filter(material -> !material.name().contains("PURPUR"))
                 .filter(material -> !material.name().contains("GHAST"))
+                .filter(material -> !material.name().contains("KNOWLEDGE"))
 
                 .toList();
 
@@ -200,8 +212,6 @@ public final class ItemHuntPlugin extends JavaPlugin {
         BossBar oldBossBar = bossBars.remove(playerID);
         if (oldBossBar != null)
             oldBossBar.removeAll();
-
-        Bukkit.getLogger().info("ShowItem" + TeamManager.getInstance().getTeamOfPlayer(playerID).toString());
 
         Material itemToCollect = getItemToCollect(TeamManager.getInstance().getTeamOfPlayer(playerID));
         String itemName = Arrays.stream(itemToCollect.name().split("_"))
@@ -242,66 +252,10 @@ public final class ItemHuntPlugin extends JavaPlugin {
     }
 
     public void startTimer(int seconds) {
-        // Broadcast the time left to all players
-        taskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-            int timeLeft = seconds;
-
-            @Override
-            public void run() {
-                if (timeLeft > 0) {
-                    StringBuilder message = new StringBuilder();
-                    message.append(ChatColor.GOLD).append(ChatColor.BOLD);
-
-                    int hoursRemaining = timeLeft / 3600;
-                    int minutesRemaining = (timeLeft % 3600) / 60;
-                    int secondsRemaining = timeLeft % 60;
-
-                    // Broadcast the time left to all players
-                    if (hoursRemaining > 0) {
-                        if (hoursRemaining < 10) {
-                            message.append("0");
-                        }
-                        message.append(hoursRemaining);
-                    } else {
-                        message.append("00");
-                    }
-                    message.append(":");
-
-                    if (minutesRemaining > 0) {
-                        if (minutesRemaining < 10) {
-                            message.append("0");
-                        }
-                        message.append(minutesRemaining);
-                    } else {
-                        message.append("00");
-                    }
-                    message.append(":");
-
-                    if (secondsRemaining > 0) {
-                        if (secondsRemaining < 10) {
-                            message.append("0");
-                        }
-                        message.append(secondsRemaining);
-                    } else {
-                        message.append("00");
-                    }
-
-                    currentTimer = message.toString();
-
-                    Bukkit.getWorlds().forEach(world -> world.getPlayers().forEach(player ->
-                            player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, new TextComponent(message.toString()))
-                    ));
-
-                    timeLeft--;
-
-                } else {
-                    onTimeExpired();
-                }
-            }
-        }, 0L, 20L); // 20 ticks = 1 second
+        inGameTimer.startTimer(seconds);
     }
 
-    private void onTimeExpired() {
+    public void onTimeExpired() {
         Bukkit.getWorlds().forEach(world -> world.getPlayers().forEach(player -> {
             player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, new TextComponent(ChatColor.RED + "" + ChatColor.BOLD + "00:00" +
                     ":00"));
@@ -315,7 +269,6 @@ public final class ItemHuntPlugin extends JavaPlugin {
             }
         }));
         challengeFinished = true;
-        stopTimer();
         Bukkit.getBossBars().forEachRemaining(bossBar -> bossBar.removeAll());
         for (BossBar bossBar : bossBars.values()) {
             bossBar.removeAll();
@@ -323,12 +276,8 @@ public final class ItemHuntPlugin extends JavaPlugin {
         }
     }
 
-    public void stopTimer() {
-        Bukkit.getScheduler().cancelTask(taskID);
-    }
-
     public void resetChallenge() {
-        stopTimer();
+        inGameTimer.stopTimer();
         showResultsCommand.resetScores();
         showResultsCommand.setCurrentIndex(0);
         challengeFinished = false;
@@ -406,9 +355,9 @@ public final class ItemHuntPlugin extends JavaPlugin {
         assert itemPickedUpStackMeta != null;
 
         if (wasSkipItem) {
-            itemPickedUpStackMeta.setLore(Arrays.asList("Collected by " + player.getName() + " at", currentTimer, " (Skipped)"));
+            itemPickedUpStackMeta.setLore(Arrays.asList("Collected by " + player.getName() + " at", inGameTimer.getCurrentTimer(), " (Skipped)"));
         } else {
-            itemPickedUpStackMeta.setLore(Arrays.asList("Collected by " + player.getName() + " at", currentTimer));
+            itemPickedUpStackMeta.setLore(Arrays.asList("Collected by " + player.getName() + " at", inGameTimer.getCurrentTimer()));
         }
         itemPickedUpStack.setItemMeta(itemPickedUpStackMeta);
         Team teamOfPlayer = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId());
@@ -471,10 +420,6 @@ public final class ItemHuntPlugin extends JavaPlugin {
         return updraft;
     }
 
-    public String getCurrentTimer() {
-        return "[" + currentTimer + "] ";
-    }
-
     public void setPlayerListName(String listName, UUID playerID){
         displayNames.put(playerID, listName);
         Bukkit.getPlayer(playerID).setPlayerListName(listName);
@@ -486,5 +431,9 @@ public final class ItemHuntPlugin extends JavaPlugin {
 
     public void setWithUpdraftItem(boolean withUpdraftItem) {
         this.withUpdraftItem = withUpdraftItem;
+    }
+
+    public static String getMessage(String key) {
+        return messages.getString(key);
     }
 }

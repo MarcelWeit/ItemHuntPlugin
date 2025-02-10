@@ -53,8 +53,6 @@ public class ShowCollectedItemsCommand implements CommandExecutor {
 
         Iterator<ItemStack> it = itemsCollectedByTeam.iterator();
 
-        Bukkit.getLogger().info(it.hasNext() + " ");
-
         int loopCount = 0;
         while (it.hasNext()) {
             Inventory inventory = createEmptyInventory(team.getTeamName());

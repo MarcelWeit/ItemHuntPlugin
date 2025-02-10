@@ -69,7 +69,6 @@ public class TeamManager {
         int numberOfPlayersInTeams = 0;
         for(Team team : teamList){
             numberOfPlayersInTeams += team.getPlayerCount();
-            Bukkit.getLogger().info("Number of players in teams: " + numberOfPlayersInTeams);
         }
         return numberOfPlayersInTeams == Bukkit.getOnlinePlayers().size();
     }
@@ -83,12 +82,10 @@ public class TeamManager {
     public ArrayList<Team> getTeamsWithPlayers(){
         ArrayList<Team> teamsWithPlayers = new ArrayList<>();
         for(Team team : teamList){
-            Bukkit.getLogger().info("Team: " + team + " - Player Count " + team.getPlayerCount());
             if(team.getPlayerCount() > 0){
                 teamsWithPlayers.add(team);
             }
         }
-        Bukkit.getLogger().info("Teams with players: " + teamsWithPlayers);
         return teamsWithPlayers;
     }
 

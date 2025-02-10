@@ -150,6 +150,9 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
         } else if (length == 5) {
         return List.of("1", "2", "3", "4", "5", "6", "7");
         }
+        else if (length == 6) {
+            return List.of("9", "18", "27", "36", "45", "54");
+        }
         return null;
     }
 }

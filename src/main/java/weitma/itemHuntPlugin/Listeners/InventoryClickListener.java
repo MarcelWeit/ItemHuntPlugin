@@ -36,7 +36,6 @@ public class InventoryClickListener implements Listener {
         ItemStack currentItem = event.getCurrentItem();
 
         if(currentItem == null){
-            Bukkit.getLogger().info("No item clicked");
             return;
         }
 

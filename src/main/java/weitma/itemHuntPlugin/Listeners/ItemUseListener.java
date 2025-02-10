@@ -30,7 +30,6 @@ public class ItemUseListener implements Listener {
                 assert itemUsed != null;
                 itemUsedMeta = itemUsed.getItemMeta();
             } catch(NullPointerException e){
-                Bukkit.getLogger().info("ItemMeta is null");
                 return;
             }
 
@@ -41,8 +40,6 @@ public class ItemUseListener implements Listener {
             if(!itemUsedMeta.hasCustomModelData()){
                 return;
             }
-
-            Bukkit.getLogger().info("Item used: " + itemUsedMeta.getCustomModelData());
 
             if (itemUsedMeta.getCustomModelData() == ItemHuntPlugin.SKIPITEM_ID) {
 
@@ -63,13 +60,6 @@ public class ItemUseListener implements Listener {
             if(itemUsedMeta.getCustomModelData() == ItemHuntPlugin.BACKPACK_ID){
                 event.setCancelled(true);
                 player.openInventory(plugin.getBackpackInventory(TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId())));
-            }
-            if(itemUsedMeta.getCustomModelData() == ItemHuntPlugin.SPECIAL_ROCKET_ID){
-                Bukkit.getLogger().info("Special Rocket used");
-                ItemStack specialRocket = plugin.getSpecialRocket();
-                int slot = event.getPlayer().getInventory().getHeldItemSlot();
-                specialRocket.setAmount(2);
-                event.getPlayer().getInventory().setItem(slot, specialRocket);
             }
             if(itemUsedMeta.getCustomModelData() == ItemHuntPlugin.UPDRAFT_ITEM) {
 
