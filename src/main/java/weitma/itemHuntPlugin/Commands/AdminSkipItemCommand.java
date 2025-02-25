@@ -31,7 +31,7 @@ public class AdminSkipItemCommand implements CommandExecutor {
                 return false;
             }
 
-            Material itemThatShouldveBeenCollected = plugin.getItemToCollect(TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId()));
+            Material itemThatShouldveBeenCollected = plugin.getItemToCollect(TeamManager.getInstance().getTeamOfPlayer(target.getUniqueId()));
             plugin.successfullPickup(target, itemThatShouldveBeenCollected, false, true);
 
         }

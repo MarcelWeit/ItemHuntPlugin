@@ -34,23 +34,23 @@ public final class ItemHuntPlugin extends JavaPlugin {
     public static final int SPECIAL_ROCKET_ID = 1000002;
     public static final int UPDRAFT_ITEM = 1000003;
     public static final int TEAM_ITEM = 1000004;
-    private static HashMap<Team, Material> itemsToCollectByTeam;
+    private static final HashMap<Team, Material> itemsToCollectByTeam = new HashMap<>();
     private final HashMap<Team, ArrayList<ItemStack>> itemsCollectedByTeam;
     private final HashMap<UUID, BossBar> bossBars;
     private final HashMap<Team, Inventory> backpackInventoryForTeam;
     private boolean challengeStarted;
     private boolean challengeFinished;
     private ShowResultsCommand showResultsCommand;
+    private ShowCollectedItemsCommand showCollectedItemsCommand;
     private final HashMap<UUID, String> displayNames;
     private boolean withUpdraftItem = false;
-    private static FileConfiguration messages;
+//    private static FileConfiguration messages;
     private final InGameTimer inGameTimer;
 
     public ItemHuntPlugin() {
         this.backpackInventoryForTeam = new HashMap<>();
         this.challengeStarted = false;
         this.challengeFinished = false;
-        itemsToCollectByTeam = new HashMap<>();
         itemsCollectedByTeam = new HashMap<>();
         bossBars = new HashMap<>();
         displayNames = new HashMap<>();
@@ -61,24 +61,25 @@ public final class ItemHuntPlugin extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic
 
-        String language = getConfig().getString("language", "en");
-        File languageFile = new File(getDataFolder(), "lang/messages_" + language + ".yml");
-        messages = YamlConfiguration.loadConfiguration(languageFile);
+//        String language = getConfig().getString("language", "en");
+//        File languageFile = new File(getDataFolder(), "lang/messages_" + language + ".yml");
+//        messages = YamlConfiguration.loadConfiguration(languageFile);
 
         showResultsCommand = new ShowResultsCommand(this);
+        showCollectedItemsCommand = new ShowCollectedItemsCommand(this);
 
         getCommand("startchallenge").setExecutor(new StartChallengeCommand(this));
         getCommand("results").setExecutor(showResultsCommand);
         getCommand("teams").setExecutor(new ShowTeamsCommand(this));
         getCommand("skipitem").setExecutor(new AdminSkipItemCommand(this));
-        getCommand("showcollecteditems").setExecutor(new ShowCollectedItemsCommand(this));
+        getCommand("showcollecteditems").setExecutor(showCollectedItemsCommand);
         getCommand("resetchallenge").setExecutor(new resetChallengeCommand(this));
         getCommand("timer").setExecutor(new TimerCommands(inGameTimer));
 
         getServer().getPluginManager().registerEvents(new ItemCollectListener(this), this);
         getServer().getPluginManager().registerEvents(new ItemUseListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this);
-        getServer().getPluginManager().registerEvents(new InventoryClickListener(this), this);
+        getServer().getPluginManager().registerEvents(new InventoryClickListener(this, showCollectedItemsCommand), this);
         getServer().getPluginManager().registerEvents(new PlayerDeathListener(), this);
 
 
@@ -279,7 +280,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
     public void resetChallenge() {
         inGameTimer.stopTimer();
         showResultsCommand.resetScores();
-        showResultsCommand.setCurrentIndex(0);
+        showCollectedItemsCommand.clearTeamInventories();
         challengeFinished = false;
         challengeStarted = false;
         withUpdraftItem = false;
@@ -402,14 +403,6 @@ public final class ItemHuntPlugin extends JavaPlugin {
         return backpackInventoryForTeam.get(team);
     }
 
-    public ItemStack getSpecialRocket(){
-        ItemStack rocket = new ItemStack(Material.FIREWORK_ROCKET, 2);
-        ItemMeta rocketMeta = rocket.getItemMeta();
-        rocketMeta.setCustomModelData(ItemHuntPlugin.SPECIAL_ROCKET_ID);
-        rocket.setItemMeta(rocketMeta);
-        return rocket;
-    }
-
     public ItemStack getUpdraftItem(int amount){
         ItemStack updraft = new ItemStack(Material.FEATHER, amount);
         ItemMeta updraftMeta = updraft.getItemMeta();
@@ -433,7 +426,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
         this.withUpdraftItem = withUpdraftItem;
     }
 
-    public static String getMessage(String key) {
-        return messages.getString(key);
-    }
+//    public static String getMessage(String key) {
+//        return messages.getString(key);
+//    }
 }

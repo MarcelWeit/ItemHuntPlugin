@@ -24,11 +24,9 @@ public class ShowResultsCommand implements CommandExecutor {
     private final ItemHuntPlugin plugin;
     private int currentIndex = 0;
     private List<Map.Entry<Team, Integer>> sortedScores;
-    private static HashMap<Team, Inventory> teamResults;
 
     public ShowResultsCommand(ItemHuntPlugin plugin) {
         this.plugin = plugin;
-        teamResults = new HashMap<>();
     }
 
     @Override
@@ -122,13 +120,11 @@ public class ShowResultsCommand implements CommandExecutor {
                         TextComponent messsagePlacement = new TextComponent(playerPlacement + ". " + team.getTeamName() + " - " + score);
                         TextComponent messageInventory = new TextComponent(ChatColor.GREEN + " [Show Items]");
                         messageInventory.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-                                "/showcollecteditems " + TeamManager.getInstance().getTeamIndex(team.getTeamName()      ) + " " + onlinePlayer.getUniqueId()));
+                                "/showcollecteditems " + TeamManager.getInstance().getTeamIndex(team.getTeamName()) + " " + onlinePlayer.getUniqueId() + " " + "0"));
 
                         messsagePlacement.addExtra(messageInventory);
                         onlinePlayer.spigot().sendMessage(messsagePlacement);
                     }
-
-                    teamResults.put(team, inventory);
 
                     return;
                 }
@@ -155,20 +151,12 @@ public class ShowResultsCommand implements CommandExecutor {
                 listcounter++;
                 placement++;
             }
-        }.runTaskTimer(plugin, 0L, 10L); // 0L initial delay, 20L (1 second) between iterations
-    }
-
-    public void setCurrentIndex(int currentIndex) {
-        this.currentIndex = currentIndex;
+        }.runTaskTimer(plugin, 0L, 5L); // 0L initial delay, 20L (1 second) between iterations
     }
 
     public void resetScores() {
         this.sortedScores = null;
         this.currentIndex = 0;
-        ShowResultsCommand.teamResults.clear();
     }
 
-    public static Inventory getTeamResults(Team team) {
-        return teamResults.get(team);
-    }
 }

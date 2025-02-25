@@ -19,35 +19,40 @@ public class ShowCollectedItemsCommand implements CommandExecutor {
 
     private final ItemHuntPlugin plugin;
 
-    private static ArrayList<Inventory> teamInventories = new ArrayList<>();;
-    Set<Integer> skipSpaces = new HashSet<>();
+    private static final HashMap<Team, ArrayList<Inventory>> teamInventories = new HashMap<>();
+    Set<Integer> skipCellsInInv = new HashSet<>();
+    private static final HashMap<Player, Integer> currentOpenInv = new HashMap<>();
 
     public ShowCollectedItemsCommand(ItemHuntPlugin plugin) {
         this.plugin = plugin;
-        skipSpaces.add(0);
-        skipSpaces.add(8);
-        skipSpaces.add(9);
-        skipSpaces.add(17);
-        skipSpaces.add(18);
-        skipSpaces.add(26);
-        skipSpaces.add(27);
-        skipSpaces.add(35);
-        skipSpaces.add(36);
-        skipSpaces.add(44);
-        skipSpaces.add(45);
-        skipSpaces.add(53);
+        skipCellsInInv.add(0);
+        skipCellsInInv.add(8);
+        skipCellsInInv.add(9);
+        skipCellsInInv.add(17);
+        skipCellsInInv.add(18);
+        skipCellsInInv.add(26);
+        skipCellsInInv.add(27);
+        skipCellsInInv.add(35);
+        skipCellsInInv.add(36);
+        skipCellsInInv.add(44);
+        skipCellsInInv.add(45);
+        skipCellsInInv.add(53);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
-        UUID playerID = UUID.fromString(args[1]);
         int teamIndex = Integer.parseInt(args[0]);
+        UUID playerID = UUID.fromString(args[1]);
+        int index = Integer.parseInt(args[2]);
 
         Player player = Bukkit.getPlayer(playerID);
         assert player != null;
 
         Team team = TeamManager.getInstance().getTeam(teamIndex);
+        if(!teamInventories.containsKey(team)) {
+            teamInventories.put(team, new ArrayList<>());
+        }
 
         ArrayList<ItemStack> itemsCollectedByTeam = plugin.getItemsCollectedByTeam(team);
 
@@ -56,7 +61,7 @@ public class ShowCollectedItemsCommand implements CommandExecutor {
         int loopCount = 0;
         while (it.hasNext()) {
             Inventory inventory = createEmptyInventory(team.getTeamName());
-            teamInventories.add(inventory);
+            teamInventories.get(team).add(inventory);
             for (int i = 10; i < 53; i++) {
                 if (i == 27 && loopCount != 0) {
                     inventory.setItem(i, new ItemStack(Material.STONE_BUTTON));
@@ -75,13 +80,15 @@ public class ShowCollectedItemsCommand implements CommandExecutor {
             loopCount++;
         }
 
-        player.openInventory(teamInventories.getFirst());
+        player.openInventory(teamInventories.get(team).get(index));
+
+        currentOpenInv.put(player, index);
 
         return true;
     }
 
     private boolean isSkipSpace(int i) {
-        return skipSpaces.contains(i);
+        return skipCellsInInv.contains(i);
     }
 
     private Inventory createEmptyInventory(String teamName) {
@@ -107,10 +114,12 @@ public class ShowCollectedItemsCommand implements CommandExecutor {
         return inventory;
     }
 
-    public static void openInventory(Player player, int index){
-        if(teamInventories.get(index) != null) {
-            player.openInventory(teamInventories.get(index));
-        }
+    public void clearTeamInventories(){
+        teamInventories.clear();
+    }
+
+    public int getInvIndexOfPlayer(Player player) {
+        return currentOpenInv.get(player);
     }
 
 }

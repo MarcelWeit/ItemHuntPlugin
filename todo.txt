@@ -1,5 +1,4 @@
-- New Mode everyone collects the same item?
-- Display Item Picture in UI
+- ShowCollectedItems shows wrong inventory
 
 Teams:
 - Skip item doesnt work

@@ -20,10 +20,11 @@ import java.util.HashMap;
 public class InventoryClickListener implements Listener {
 
     private final ItemHuntPlugin plugin;
-    private HashMap<Player, Integer> currentInvIndex = new HashMap<>();
+    private ShowCollectedItemsCommand showCollectedItemsCommand;
 
-    public InventoryClickListener(ItemHuntPlugin plugin){
+    public InventoryClickListener(ItemHuntPlugin plugin, ShowCollectedItemsCommand command) {
         this.plugin = plugin;
+        this.showCollectedItemsCommand = command;
     }
 
     @EventHandler
@@ -99,19 +100,18 @@ public class InventoryClickListener implements Listener {
 
         } else if(ChatColor.stripColor(event.getView().getTitle()).startsWith("Items collected")){
             event.setCancelled(true);
-
-            if(!currentInvIndex.containsKey(player)) {
-                currentInvIndex.put(player, 0);
-            }
+            Team team = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId());
+            int currentIndex = showCollectedItemsCommand.getInvIndexOfPlayer(player);
 
             if(currentItem.getType().equals(Material.STONE_BUTTON)){ //left
-                currentInvIndex.put(player, currentInvIndex.get(player) - 1);
+                currentIndex -= 1;
             }
 
             if(currentItem.getType().equals(Material.OAK_BUTTON)){ //right
-                currentInvIndex.put(player, currentInvIndex.get(player) + 1);
+                currentIndex += 1;
             }
-            ShowCollectedItemsCommand.openInventory(player, currentInvIndex.get(player));
+            Bukkit.dispatchCommand(player,
+                    "/showcollecteditems" + TeamManager.getInstance().getTeamIndex(team.getTeamName()) + " " + player.getUniqueId() + " " +currentIndex);
 
         } else if(ChatColor.stripColor(event.getView().getTitle()).startsWith("Backpack")){
             if (currentItem.getItemMeta() != null && currentItem.getItemMeta().hasCustomModelData() && currentItem.getItemMeta().getCustomModelData() == ItemHuntPlugin.BACKPACK_ID) {
