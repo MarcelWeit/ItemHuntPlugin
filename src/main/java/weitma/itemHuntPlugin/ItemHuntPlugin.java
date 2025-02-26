@@ -9,21 +9,18 @@ import org.bukkit.Sound;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import weitma.itemHuntPlugin.Commands.*;
 import weitma.itemHuntPlugin.Listeners.*;
 import weitma.itemHuntPlugin.Utils.InGameTimer;
 import weitma.itemHuntPlugin.Utils.Team;
 import weitma.itemHuntPlugin.Utils.TeamManager;
 
-import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,10 +28,14 @@ public final class ItemHuntPlugin extends JavaPlugin {
 
     public static final int BACKPACK_ID = 100000;
     public static final int SKIPITEM_ID = 100001;
-    public static final int SPECIAL_ROCKET_ID = 1000002;
     public static final int UPDRAFT_ITEM = 1000003;
     public static final int TEAM_ITEM = 1000004;
-    private static final HashMap<Team, Material> itemsToCollectByTeam = new HashMap<>();
+
+    public static final int RANDOM_ORDER_GAMEMODE = 0;
+    public static final int SAME_ORDER_GAMEMODE = 1;
+
+    private static final ArrayList<Material> itemCollectOrder = new ArrayList<>();
+    private static final HashMap<Team, Material> itemToCollectByTeam = new HashMap<>();
     private final HashMap<Team, ArrayList<ItemStack>> itemsCollectedByTeam;
     private final HashMap<UUID, BossBar> bossBars;
     private final HashMap<Team, Inventory> backpackInventoryForTeam;
@@ -44,8 +45,9 @@ public final class ItemHuntPlugin extends JavaPlugin {
     private ShowCollectedItemsCommand showCollectedItemsCommand;
     private final HashMap<UUID, String> displayNames;
     private boolean withUpdraftItem = false;
-//    private static FileConfiguration messages;
     private final InGameTimer inGameTimer;
+    private NightSkipVoteCommand nightSkipVoteCommand;
+    private int gamemode;
 
     public ItemHuntPlugin() {
         this.backpackInventoryForTeam = new HashMap<>();
@@ -61,12 +63,11 @@ public final class ItemHuntPlugin extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic
 
-//        String language = getConfig().getString("language", "en");
-//        File languageFile = new File(getDataFolder(), "lang/messages_" + language + ".yml");
-//        messages = YamlConfiguration.loadConfiguration(languageFile);
-
         showResultsCommand = new ShowResultsCommand(this);
         showCollectedItemsCommand = new ShowCollectedItemsCommand(this);
+        nightSkipVoteCommand = new NightSkipVoteCommand();
+
+        itemCollectOrder.add(Material.OAK_PLANKS);
 
         getCommand("startchallenge").setExecutor(new StartChallengeCommand(this));
         getCommand("results").setExecutor(showResultsCommand);
@@ -75,6 +76,10 @@ public final class ItemHuntPlugin extends JavaPlugin {
         getCommand("showcollecteditems").setExecutor(showCollectedItemsCommand);
         getCommand("resetchallenge").setExecutor(new resetChallengeCommand(this));
         getCommand("timer").setExecutor(new TimerCommands(inGameTimer));
+        getCommand("startvoteskipnight").setExecutor(nightSkipVoteCommand);
+        getCommand("voteskipnighttrue").setExecutor(new PlayerVoteSkipNightTrueCommand(nightSkipVoteCommand));
+        getCommand("voteskipnightfalse").setExecutor(new PlayerVoteSkipNightFalseCommand(nightSkipVoteCommand));
+        getCommand("giveupdraftitem").setExecutor(new GiveUpdraftItemCommand(this));
 
         getServer().getPluginManager().registerEvents(new ItemCollectListener(this), this);
         getServer().getPluginManager().registerEvents(new ItemUseListener(this), this);
@@ -82,7 +87,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new InventoryClickListener(this, showCollectedItemsCommand), this);
         getServer().getPluginManager().registerEvents(new PlayerDeathListener(), this);
 
-
+        checkNight();
     }
 
     @Override
@@ -92,7 +97,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
     }
 
     public Material getItemToCollect(Team team) {
-        return itemsToCollectByTeam.get(team);
+        return itemToCollectByTeam.get(team);
     }
 
     private void addItemToCollectedByTeam(Team team, ItemStack item) {
@@ -108,6 +113,14 @@ public final class ItemHuntPlugin extends JavaPlugin {
     // New 1.21 items are included
     // Excluded: Silk Touch obtainables, Eggs, Music, Disc, End Items, Command, Unobtainable
     public void generateNewRandomMaterialToCollect(Team team) {
+
+        if(gamemode == SAME_ORDER_GAMEMODE){
+            if(getItemsCollectedByTeam(team).size() < itemCollectOrder.size()){
+                itemToCollectByTeam.put(team, itemCollectOrder.get(getItemsCollectedByTeam(team).size()));
+                Bukkit.getLogger().info("Same Order: " + getItemToCollect(team).toString());
+                return;
+            }
+        }
 
         List<Material> pickableItems = Arrays.stream(Material.values())
                 .filter(Material::isItem)
@@ -169,7 +182,6 @@ public final class ItemHuntPlugin extends JavaPlugin {
                 .filter(material -> !material.name().contains("SUSPICIOUS"))
                 .filter(material -> !material.name().contains("TURTLE"))
                 .filter(material -> !material.name().startsWith("END_"))
-                .filter(material -> !material.name().contains("HEART"))
                 .filter(material -> !material.name().contains("PRISMARINE"))
                 .filter(material -> !material.name().contains("VAULT"))
                 .filter(material -> !material.name().contains("GOAT"))
@@ -198,13 +210,18 @@ public final class ItemHuntPlugin extends JavaPlugin {
                 .filter(material -> !material.name().contains("PURPUR"))
                 .filter(material -> !material.name().contains("GHAST"))
                 .filter(material -> !material.name().contains("KNOWLEDGE"))
-
+                .filter(material -> !material.name().contains("SADDLE"))
+                .filter(material -> !material.name().contains("HORSE"))
+                .filter(material -> !material.name().contains("CREAKING"))
+                .filter(material -> !material.name().contains("RESIN"))
                 .toList();
 
         // pickable 961 items
         // material.values 1537 items
         Material material = pickableItems.get((int) (Math.random() * pickableItems.size()));
-        itemsToCollectByTeam.put(team, material);
+
+        itemCollectOrder.add(material);
+        itemToCollectByTeam.put(team, material);
     }
 
     public void showItemToCollect(UUID playerID) {
@@ -230,10 +247,11 @@ public final class ItemHuntPlugin extends JavaPlugin {
         bossbar.addPlayer(player);
         bossBars.put(playerID, bossbar);
 
-        ItemStack itemStack = new ItemStack(itemToCollect);
-        Item itemEntity = player.getWorld().dropItem(player.getLocation(), itemStack);
-        itemEntity.setPickupDelay(Integer.MAX_VALUE); // Prevent the item from being picked up
-        player.addPassenger(itemEntity);
+        // Passenger
+//        ItemStack itemStack = new ItemStack(itemToCollect);
+//        Item itemEntity = player.getWorld().dropItem(player.getLocation(), itemStack);
+//        itemEntity.setPickupDelay(Integer.MAX_VALUE); // Prevent the item from being picked up
+//        player.addPassenger(itemEntity);
 
         TextComponent message = new TextComponent(ChatColor.DARK_AQUA + "Collect: ");
         TextComponent link = new TextComponent(ChatColor.DARK_AQUA + "" + ChatColor.UNDERLINE + "[" + itemName + "]");
@@ -284,7 +302,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
         challengeFinished = false;
         challengeStarted = false;
         withUpdraftItem = false;
-        itemsToCollectByTeam.clear();
+        itemToCollectByTeam.clear();
         itemsCollectedByTeam.clear();
         Bukkit.getBossBars().forEachRemaining(bossBar -> bossBar.removeAll());
         for (BossBar bossBar : bossBars.values()) {
@@ -311,7 +329,11 @@ public final class ItemHuntPlugin extends JavaPlugin {
     }
 
     public ArrayList<ItemStack> getItemsCollectedByTeam(Team team) {
-        return itemsCollectedByTeam.get(team);
+        if(itemToCollectByTeam.get(team) == null){
+            return new ArrayList<>();
+        } else {
+            return itemsCollectedByTeam.get(team);
+        }
     }
 
     public ItemStack getSkipItem(int amount) {
@@ -384,7 +406,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
         }
     }
 
-    public ItemStack createBackpack(Team team, int size) throws IllegalArgumentException {
+    public ItemStack createBackpack(Team team, int size, int skipItemsAmount) throws IllegalArgumentException {
         if(size % 9 != 0){
             throw new IllegalArgumentException("Backpack-Size must be a multiple of 9");
         }
@@ -395,7 +417,9 @@ public final class ItemHuntPlugin extends JavaPlugin {
         meta.setCustomModelData(BACKPACK_ID);
         meta.setLore(Arrays.asList(ChatColor.GRAY + "Right-click to open"));
         backpack.setItemMeta(meta);
-        backpackInventoryForTeam.put(team, Bukkit.createInventory(null, size, "Backpack of " + team.getTeamName()));
+        Inventory backpackInventory = Bukkit.createInventory(null, size, "Backpack of " + team.getTeamName());
+        backpackInventory.addItem(getSkipItem(skipItemsAmount));
+        backpackInventoryForTeam.put(team, backpackInventory);
         return backpack;
     }
 
@@ -420,13 +444,41 @@ public final class ItemHuntPlugin extends JavaPlugin {
 
     public boolean isWithUpdraftItem() {
         return withUpdraftItem;
+
     }
 
     public void setWithUpdraftItem(boolean withUpdraftItem) {
         this.withUpdraftItem = withUpdraftItem;
     }
 
-//    public static String getMessage(String key) {
-//        return messages.getString(key);
-//    }
+    public void checkNight(){
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                Bukkit.getWorlds().forEach(world -> {
+                    if(world.getTime() > 12000 && world.getTime() < 23000){
+                        if(!nightSkipVoteCommand.isVoteRunning() && !nightSkipVoteCommand.didPlayersVoteNo()){
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "startvoteskipnight");
+                            nightSkipVoteCommand.setVoteRunning(true);
+                        }
+                    }
+                    if(world.getTime() < 500){
+                        Bukkit.getLogger().info("Day started");
+                        if(nightSkipVoteCommand.isVoteRunning()){
+                            nightSkipVoteCommand.setVoteRunning(false);
+                            nightSkipVoteCommand.setPlayersVotedNo(false);
+                            Bukkit.getOnlinePlayers().forEach(player ->
+                                    player.sendMessage(ChatColor.RED + "Vote has been canceled since its already day"));
+                        }
+                        nightSkipVoteCommand.setVoteRunning(false);
+                        nightSkipVoteCommand.setPlayersVotedNo(false);
+                    }
+                });
+            }
+        }.runTaskTimer(this, 0, 200);
+    }
+
+    public void setGamemode(int gamemode) {
+        this.gamemode = gamemode;
+    }
 }

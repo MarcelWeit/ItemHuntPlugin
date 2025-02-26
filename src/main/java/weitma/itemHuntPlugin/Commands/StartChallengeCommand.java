@@ -15,7 +15,10 @@ import weitma.itemHuntPlugin.Listeners.HungerListener;
 import weitma.itemHuntPlugin.Utils.Team;
 import weitma.itemHuntPlugin.Utils.TeamManager;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 public class StartChallengeCommand implements CommandExecutor, TabCompleter {
 
@@ -37,9 +40,9 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
 
         Player player = (Player) sender;
 
-        String usage = "Usage: /startchallenge <seconds> <skipItems> <elytra(yes/no)> <hunger(yes/no)> <updraftitems> <backpacksize(n*9<=54)";
+        String usage = "Usage: /startchallenge <seconds> <skipItems> <elytra(yes/no)> <hunger(yes/no)> <updraftitems> <backpacksize(9<=n*9<=54)";
 
-        if (args.length != 6) {
+        if (args.length != 7) {
             sender.sendMessage(ChatColor.RED + usage);
             return false;
         }
@@ -49,19 +52,28 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
             Integer.parseInt(args[1]);
             Integer.parseInt(args[4]);
             Integer.parseInt(args[5]);
+            Integer.parseInt(args[6]);
         } catch (NumberFormatException e) {
             sender.sendMessage(ChatColor.RED + usage);
             return false;
         }
 
         int seconds = Integer.parseInt(args[0]);
-        int skipItems = Integer.parseInt(args[1]);
+        int skipItemsAmount = Integer.parseInt(args[1]);
         boolean withElytra = args[2].equals("yes");
         boolean withHunger = args[3].equals("yes");
-        int updraftItems = Integer.parseInt(args[4]);
+        int updraftItemsAmount = Integer.parseInt(args[4]);
         int backpackSize = Integer.parseInt(args[5]);
+        int gamemode = Integer.parseInt(args[6]);
 
-        if(skipItems < 0 || updraftItems < 0 || backpackSize < 0){
+        if (gamemode != 0 && gamemode != 1) {
+            sender.sendMessage(ChatColor.RED + "Gamemode must be either 0 or 1");
+            return false;
+        }
+
+        plugin.setGamemode(gamemode);
+
+        if(skipItemsAmount < 0 || updraftItemsAmount < 0 || backpackSize < 0){
             player.sendMessage("Online positive integers are allowed for skipitems, updraftitems and backpacksize");
         }
 
@@ -74,7 +86,7 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
             return false;
         }
 
-        if(updraftItems > 0){
+        if(updraftItemsAmount > 0){
             plugin.setWithUpdraftItem(true);
         }
 
@@ -95,9 +107,11 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
 
         Bukkit.getLogger().info("Generating new random materials for all teams");
 
+        HashMap<Team, ItemStack> backpacks = new HashMap<>();
         for (Team teamWithPlayer : TeamManager.getInstance().getTeamsWithPlayers()) {
-            Bukkit.getLogger().info("Generating new random material for team " + teamWithPlayer.getTeamName());
             plugin.generateNewRandomMaterialToCollect(teamWithPlayer);
+            ItemStack backpack = plugin.createBackpack(teamWithPlayer, backpackSize, skipItemsAmount);
+            backpacks.put(teamWithPlayer, backpack);
         }
 
         Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
@@ -107,12 +121,8 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
 
             plugin.showItemToCollect(onlinePlayer.getUniqueId());
 
-            onlinePlayer.getInventory().addItem(plugin.getSkipItem(skipItems));
-            if(backpackSize != 0) {
-                ItemStack backpack = plugin.createBackpack(TeamManager.getInstance().getTeamOfPlayer(onlinePlayer.getUniqueId()), backpackSize);
-                onlinePlayer.getInventory().setItem(8, backpack);
-            }
-            onlinePlayer.getInventory().addItem(plugin.getUpdraftItem(updraftItems));
+            onlinePlayer.getInventory().addItem(plugin.getUpdraftItem(updraftItemsAmount));
+            onlinePlayer.getInventory().setItem(8, backpacks.get(TeamManager.getInstance().getTeamOfPlayer(onlinePlayer.getUniqueId())));
 
             if (withElytra) {
                 ItemStack elytra = new ItemStack(Material.ELYTRA);
@@ -131,6 +141,8 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
         });
 
         plugin.startTimer(seconds);
+
+        Bukkit.getWorlds().forEach(world -> world.setClearWeatherDuration(999999999));
 
         return true;
     }
@@ -152,6 +164,9 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
         }
         else if (length == 6) {
             return List.of("9", "18", "27", "36", "45", "54");
+        }
+        else if (length == 7) {
+            return List.of("0", "1");
         }
         return null;
     }

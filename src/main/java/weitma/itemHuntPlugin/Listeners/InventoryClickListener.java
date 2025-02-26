@@ -49,7 +49,6 @@ public class InventoryClickListener implements Listener {
             Team team = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId());
             if(team != null){
                 team.removePlayer(player.getUniqueId());
-                return;
             }
 
             switch(currentItem.getType()){
@@ -96,7 +95,7 @@ public class InventoryClickListener implements Listener {
             for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
                 onlinePlayer.sendMessage(player.getName() + " joined " + TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId()).getTeamName());
             }
-            Bukkit.dispatchCommand(player, "teams");
+            player.closeInventory();
 
         } else if(ChatColor.stripColor(event.getView().getTitle()).startsWith("Items collected")){
             event.setCancelled(true);
@@ -110,8 +109,9 @@ public class InventoryClickListener implements Listener {
             if(currentItem.getType().equals(Material.OAK_BUTTON)){ //right
                 currentIndex += 1;
             }
-            Bukkit.dispatchCommand(player,
-                    "/showcollecteditems" + TeamManager.getInstance().getTeamIndex(team.getTeamName()) + " " + player.getUniqueId() + " " +currentIndex);
+            String command = "showcollecteditems" + " " + TeamManager.getInstance().getTeamIndex(team.getTeamName()) + " " + player.getUniqueId() + " " + currentIndex;
+            Bukkit.getLogger().info(command);
+            Bukkit.dispatchCommand(player, command);
 
         } else if(ChatColor.stripColor(event.getView().getTitle()).startsWith("Backpack")){
             if (currentItem.getItemMeta() != null && currentItem.getItemMeta().hasCustomModelData() && currentItem.getItemMeta().getCustomModelData() == ItemHuntPlugin.BACKPACK_ID) {

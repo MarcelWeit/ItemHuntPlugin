@@ -20,7 +20,6 @@ public class Team {
     }
 
     public void addPlayer(UUID player){
-        Bukkit.getLogger().info("[InTeamClass] Adding player " + player + " to team " + teamName);
         teamMembers.add(player);
     }
 

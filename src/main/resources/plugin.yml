@@ -23,7 +23,20 @@ commands:
     permission: itemhuntplugin.skipitem
   showcollecteditems:
     description: Shows the collected items
+    usage: /<command> <teamIndex> <playerUUID> <inventoryIndex>
   timer:
     description: Pause or resume the timer
     default: op
     permission: itemhuntplugin.skipitem
+  startvoteskipnight:
+    description: Starts a vote to skip the night
+    default: op
+    permission: itemhuntplugin.startvoteskipnight
+  voteskipnighttrue:
+    description: Votes to skip the night
+  voteskipnightfalse:
+    description: Votes to not skip the night
+  giveupdraftitem:
+    description: Gives x amount of updraft items
+    default: op
+    permission: itemhuntplugin.giveupdraftitem
