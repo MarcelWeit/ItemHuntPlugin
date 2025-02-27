@@ -5,10 +5,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import weitma.itemHuntPlugin.Commands.ShowTeamsCommand;
 import weitma.itemHuntPlugin.ItemHuntPlugin;
 import weitma.itemHuntPlugin.Utils.TeamManager;
 
@@ -21,7 +21,7 @@ public class ItemUseListener implements Listener {
     }
 
     @EventHandler
-    public void onSkipItemUse(PlayerInteractEvent event) {
+    public void onItemUse(PlayerInteractEvent event) {
         if (event.getPlayer() instanceof Player player) {
             ItemStack itemUsed = event.getItem();
             ItemMeta itemUsedMeta;
@@ -63,8 +63,10 @@ public class ItemUseListener implements Listener {
             }
             if(itemUsedMeta.getCustomModelData() == ItemHuntPlugin.UPDRAFT_ITEM) {
 
-                player.setVelocity(player.getVelocity().setY(40));
-                itemUsed.setAmount(itemUsed.getAmount() - 1);
+                if(event.getAction() == Action.RIGHT_CLICK_AIR) {
+                    player.setVelocity(player.getVelocity().setY(40));
+                    itemUsed.setAmount(itemUsed.getAmount() - 1);
+                }
 
             }
             if(itemUsedMeta.getCustomModelData() == ItemHuntPlugin.TEAM_ITEM) {

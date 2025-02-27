@@ -39,13 +39,13 @@ public final class ItemHuntPlugin extends JavaPlugin {
     private final HashMap<Team, ArrayList<ItemStack>> itemsCollectedByTeam;
     private final HashMap<UUID, BossBar> bossBars;
     private final HashMap<Team, Inventory> backpackInventoryForTeam;
+    private final HashMap<UUID, String> displayNames;
+    private final InGameTimer inGameTimer;
     private boolean challengeStarted;
     private boolean challengeFinished;
     private ShowResultsCommand showResultsCommand;
     private ShowCollectedItemsCommand showCollectedItemsCommand;
-    private final HashMap<UUID, String> displayNames;
     private boolean withUpdraftItem = false;
-    private final InGameTimer inGameTimer;
     private NightSkipVoteCommand nightSkipVoteCommand;
     private int gamemode;
 
@@ -114,8 +114,8 @@ public final class ItemHuntPlugin extends JavaPlugin {
     // Excluded: Silk Touch obtainables, Eggs, Music, Disc, End Items, Command, Unobtainable
     public void generateNewRandomMaterialToCollect(Team team) {
 
-        if(gamemode == SAME_ORDER_GAMEMODE){
-            if(getItemsCollectedByTeam(team).size() < itemCollectOrder.size()){
+        if (gamemode == SAME_ORDER_GAMEMODE) {
+            if (getItemsCollectedByTeam(team).size() < itemCollectOrder.size()) {
                 itemToCollectByTeam.put(team, itemCollectOrder.get(getItemsCollectedByTeam(team).size()));
                 Bukkit.getLogger().info("Same Order: " + getItemToCollect(team).toString());
                 return;
@@ -248,10 +248,10 @@ public final class ItemHuntPlugin extends JavaPlugin {
         bossBars.put(playerID, bossbar);
 
         // Passenger
-//        ItemStack itemStack = new ItemStack(itemToCollect);
-//        Item itemEntity = player.getWorld().dropItem(player.getLocation(), itemStack);
-//        itemEntity.setPickupDelay(Integer.MAX_VALUE); // Prevent the item from being picked up
-//        player.addPassenger(itemEntity);
+        //        ItemStack itemStack = new ItemStack(itemToCollect);
+        //        Item itemEntity = player.getWorld().dropItem(player.getLocation(), itemStack);
+        //        itemEntity.setPickupDelay(Integer.MAX_VALUE); // Prevent the item from being picked up
+        //        player.addPassenger(itemEntity);
 
         TextComponent message = new TextComponent(ChatColor.DARK_AQUA + "Collect: ");
         TextComponent link = new TextComponent(ChatColor.DARK_AQUA + "" + ChatColor.UNDERLINE + "[" + itemName + "]");
@@ -311,12 +311,12 @@ public final class ItemHuntPlugin extends JavaPlugin {
         }
         bossBars.clear();
         Bukkit.getOnlinePlayers().forEach(player -> {
-            player.sendMessage(ChatColor.RED + "The challenge has been reset!");
-            if (!player.getPassengers().isEmpty()) {
-                player.getPassengers().forEach(passenger -> player.removePassenger(passenger));
-            }
-            player.setDisplayName(player.getName());
-        }
+                    player.sendMessage(ChatColor.RED + "The challenge has been reset!");
+                    if (!player.getPassengers().isEmpty()) {
+                        player.getPassengers().forEach(passenger -> player.removePassenger(passenger));
+                    }
+                    player.setDisplayName(player.getName());
+                }
         );
     }
 
@@ -329,7 +329,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
     }
 
     public ArrayList<ItemStack> getItemsCollectedByTeam(Team team) {
-        if(itemToCollectByTeam.get(team) == null){
+        if (itemToCollectByTeam.get(team) == null) {
             return new ArrayList<>();
         } else {
             return itemsCollectedByTeam.get(team);
@@ -389,7 +389,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
         }
         generateNewRandomMaterialToCollect(teamOfPlayer);
 
-        for(UUID uuidInTeam : TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId()).getTeamMembers()) {
+        for (UUID uuidInTeam : TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId()).getTeamMembers()) {
             Player playerInTeam = Bukkit.getPlayer(uuidInTeam);
             assert playerInTeam != null;
             playerInTeam.getPassengers().forEach(passenger -> {
@@ -400,14 +400,14 @@ public final class ItemHuntPlugin extends JavaPlugin {
             showItemToCollect(uuidInTeam);
             playerInTeam.playSound(player.getLocation(), "entity.experience_orb.pickup", 1, 1);
 
-            if(isWithUpdraftItem() && !wasSkipItem){
+            if (isWithUpdraftItem() && !wasSkipItem) {
                 playerInTeam.getInventory().addItem(getUpdraftItem(1));
             }
         }
     }
 
     public ItemStack createBackpack(Team team, int size, int skipItemsAmount) throws IllegalArgumentException {
-        if(size % 9 != 0){
+        if (size % 9 != 0) {
             throw new IllegalArgumentException("Backpack-Size must be a multiple of 9");
         }
         ItemStack backpack = new ItemStack(Material.BUNDLE);
@@ -427,7 +427,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
         return backpackInventoryForTeam.get(team);
     }
 
-    public ItemStack getUpdraftItem(int amount){
+    public ItemStack getUpdraftItem(int amount) {
         ItemStack updraft = new ItemStack(Material.FEATHER, amount);
         ItemMeta updraftMeta = updraft.getItemMeta();
         updraftMeta.setDisplayName(ChatColor.GOLD + "Updraft");
@@ -437,7 +437,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
         return updraft;
     }
 
-    public void setPlayerListName(String listName, UUID playerID){
+    public void setPlayerListName(String listName, UUID playerID) {
         displayNames.put(playerID, listName);
         Bukkit.getPlayer(playerID).setPlayerListName(listName);
     }
@@ -451,20 +451,20 @@ public final class ItemHuntPlugin extends JavaPlugin {
         this.withUpdraftItem = withUpdraftItem;
     }
 
-    public void checkNight(){
-        new BukkitRunnable(){
+    public void checkNight() {
+        new BukkitRunnable() {
             @Override
             public void run() {
                 Bukkit.getWorlds().forEach(world -> {
-                    if(world.getTime() > 12000 && world.getTime() < 23000){
-                        if(!nightSkipVoteCommand.isVoteRunning() && !nightSkipVoteCommand.didPlayersVoteNo()){
+                    if (world.getTime() > 13000 && world.getTime() < 23000) {
+                        if (!nightSkipVoteCommand.isVoteRunning() && !nightSkipVoteCommand.didPlayersVoteNo()) {
                             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "startvoteskipnight");
                             nightSkipVoteCommand.setVoteRunning(true);
                         }
                     }
-                    if(world.getTime() < 500){
+                    if (world.getTime() < 500) {
                         Bukkit.getLogger().info("Day started");
-                        if(nightSkipVoteCommand.isVoteRunning()){
+                        if (nightSkipVoteCommand.isVoteRunning()) {
                             nightSkipVoteCommand.setVoteRunning(false);
                             nightSkipVoteCommand.setPlayersVotedNo(false);
                             Bukkit.getOnlinePlayers().forEach(player ->
