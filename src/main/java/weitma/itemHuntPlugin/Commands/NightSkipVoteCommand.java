@@ -49,19 +49,20 @@ public class NightSkipVoteCommand implements CommandExecutor {
     }
 
     private void checkIfEveryoneVoted() {
-        if(nightSkipVotes.size() == Bukkit.getOnlinePlayers().size()){
+        if (nightSkipVotes.size() == Bukkit.getOnlinePlayers().size()) {
             ArrayList<Player> votedNo = new ArrayList<>();
             for (Player player : nightSkipVotes.keySet()) {
                 if (!nightSkipVotes.get(player)) { // voted no
                     votedNo.add(player);
                     playersVotedNo = true;
                 }
-            };
-            if(playersVotedNo){
+            }
+            ;
+            if (playersVotedNo) {
                 StringBuilder message = new StringBuilder(ChatColor.RED + "The Night was not skipped. The following players voted No: ");
-                for (int i=0; i<votedNo.size(); i++){
+                for (int i = 0; i < votedNo.size(); i++) {
                     message.append(votedNo.get(i).getName());
-                    if(i < votedNo.size()-1){
+                    if (i < votedNo.size() - 1) {
                         message.append(", ");
                     }
                 }
@@ -71,7 +72,8 @@ public class NightSkipVoteCommand implements CommandExecutor {
                 nightSkipVotes.clear();
             } else {
                 for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-                    onlinePlayer.sendMessage("Everyone voted to skip the Night! The Night has been skipped!");
+                    onlinePlayer.sendMessage("Everyone voted to skip the Night!");
+                    onlinePlayer.sendMessage(ChatColor.GREEN + "The Night has been skipped!");
                 }
                 for (World world : Bukkit.getWorlds()) {
                     world.setTime(0);
@@ -83,12 +85,12 @@ public class NightSkipVoteCommand implements CommandExecutor {
         }
     }
 
-    public void vote(Player player, boolean vote){
+    public void vote(Player player, boolean vote) {
         nightSkipVotes.put(player, vote);
         checkIfEveryoneVoted();
     }
 
-    public boolean isVoteRunning(){
+    public boolean isVoteRunning() {
         return voteRunning;
     }
 
@@ -96,7 +98,7 @@ public class NightSkipVoteCommand implements CommandExecutor {
         voteRunning = voting;
     }
 
-    public boolean didPlayersVoteNo(){
+    public boolean didPlayersVoteNo() {
         return playersVotedNo;
     }
 

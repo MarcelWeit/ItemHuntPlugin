@@ -15,10 +15,8 @@ import weitma.itemHuntPlugin.Listeners.HungerListener;
 import weitma.itemHuntPlugin.Utils.Team;
 import weitma.itemHuntPlugin.Utils.TeamManager;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 public class StartChallengeCommand implements CommandExecutor, TabCompleter {
 
@@ -73,20 +71,20 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
 
         plugin.setGamemode(gamemode);
 
-        if(skipItemsAmount < 0 || updraftItemsAmount < 0 || backpackSize < 0){
+        if (skipItemsAmount < 0 || updraftItemsAmount < 0 || backpackSize < 0) {
             player.sendMessage("Online positive integers are allowed for skipitems, updraftitems and backpacksize");
         }
 
-        if((!args[2].equals("yes") && !args[2].equals("no")) || (!args[3].equals("yes") && !args[3].equals("no"))){
+        if ((!args[2].equals("yes") && !args[2].equals("no")) || (!args[3].equals("yes") && !args[3].equals("no"))) {
             sender.sendMessage(ChatColor.RED + usage);
         }
 
-        if(backpackSize % 9 != 0 || backpackSize > 54){
+        if (backpackSize % 9 != 0 || backpackSize > 54) {
             player.sendMessage(ChatColor.RED + "Backpack-Size must be a multiple of 9 up to 54");
             return false;
         }
 
-        if(updraftItemsAmount > 0){
+        if (updraftItemsAmount > 0) {
             plugin.setWithUpdraftItem(true);
         }
 
@@ -117,7 +115,7 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
         Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
             onlinePlayer.getInventory().clear();
 
-            onlinePlayer.sendMessage(ChatColor.GREEN + "The challenge has started!");
+            onlinePlayer.sendMessage(ChatColor.GREEN + "Challenge started!");
 
             plugin.showItemToCollect(onlinePlayer.getUniqueId());
 
@@ -160,12 +158,10 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
         } else if (length == 4) {
             return List.of("yes", "no");
         } else if (length == 5) {
-        return List.of("1", "2", "3", "4", "5", "6", "7");
-        }
-        else if (length == 6) {
+            return List.of("1", "2", "3", "4", "5", "6", "7");
+        } else if (length == 6) {
             return List.of("9", "18", "27", "36", "45", "54");
-        }
-        else if (length == 7) {
+        } else if (length == 7) {
             return List.of("0", "1");
         }
         return null;

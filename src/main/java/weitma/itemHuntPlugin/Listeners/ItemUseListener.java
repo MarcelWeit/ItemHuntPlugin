@@ -29,7 +29,7 @@ public class ItemUseListener implements Listener {
             try {
                 assert itemUsed != null;
                 itemUsedMeta = itemUsed.getItemMeta();
-            } catch(NullPointerException e){
+            } catch (NullPointerException e) {
                 return;
             }
 
@@ -37,7 +37,7 @@ public class ItemUseListener implements Listener {
                 return;
             }
 
-            if(!itemUsedMeta.hasCustomModelData()){
+            if (!itemUsedMeta.hasCustomModelData()) {
                 return;
             }
 
@@ -54,22 +54,27 @@ public class ItemUseListener implements Listener {
                     player.sendMessage(ChatColor.RED + "Your inventory is full! Make some room before using skip item!");
                     return;
                 }
-                itemUsed.setAmount(itemUsed.getAmount() - 1);
-                plugin.skipItemToCollect(player.getUniqueId());
+
+                //                if (TeamManager.getInstance().getPlayersInTeam(TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId())).size() == 1) {
+                //                    itemUsed.setAmount(itemUsed.getAmount() - 1);
+                //                    plugin.skipItemToCollect(player.getUniqueId());
+                //                } else {
+                Bukkit.dispatchCommand(player, "playervoteskipitem");
+                //                }
             }
-            if(itemUsedMeta.getCustomModelData() == ItemHuntPlugin.BACKPACK_ID){
+            if (itemUsedMeta.getCustomModelData() == ItemHuntPlugin.BACKPACK_ID) {
                 event.setCancelled(true);
                 player.openInventory(plugin.getBackpackInventory(TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId())));
             }
-            if(itemUsedMeta.getCustomModelData() == ItemHuntPlugin.UPDRAFT_ITEM) {
+            if (itemUsedMeta.getCustomModelData() == ItemHuntPlugin.UPDRAFT_ITEM) {
 
-                if(event.getAction() == Action.RIGHT_CLICK_AIR) {
+                if (event.getAction() == Action.RIGHT_CLICK_AIR) {
                     player.setVelocity(player.getVelocity().setY(40));
                     itemUsed.setAmount(itemUsed.getAmount() - 1);
                 }
 
             }
-            if(itemUsedMeta.getCustomModelData() == ItemHuntPlugin.TEAM_ITEM) {
+            if (itemUsedMeta.getCustomModelData() == ItemHuntPlugin.TEAM_ITEM) {
 
                 event.setCancelled(true);
                 Bukkit.dispatchCommand(player, "teams");

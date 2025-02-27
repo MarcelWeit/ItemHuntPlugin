@@ -59,6 +59,13 @@ public final class ItemHuntPlugin extends JavaPlugin {
         this.inGameTimer = new InGameTimer(this);
     }
 
+    public static String beautifyMaterialName(String materialName) {
+        String itemName = Arrays.stream(materialName.split("_"))
+                .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1).toLowerCase())
+                .collect(Collectors.joining(" "));
+        return itemName;
+    }
+
     @Override
     public void onEnable() {
         // Plugin startup logic
@@ -80,6 +87,11 @@ public final class ItemHuntPlugin extends JavaPlugin {
         getCommand("voteskipnighttrue").setExecutor(new PlayerVoteSkipNightTrueCommand(nightSkipVoteCommand));
         getCommand("voteskipnightfalse").setExecutor(new PlayerVoteSkipNightFalseCommand(nightSkipVoteCommand));
         getCommand("giveupdraftitem").setExecutor(new GiveUpdraftItemCommand(this));
+
+        PlayerVoteSkipItemUseCommand playerVoteSkipItemUseCommand = new PlayerVoteSkipItemUseCommand(this);
+        getCommand("playervoteskipitem").setExecutor(playerVoteSkipItemUseCommand);
+        getCommand("voteskipitemyes").setExecutor(playerVoteSkipItemUseCommand);
+        getCommand("voteskipitemno").setExecutor(playerVoteSkipItemUseCommand);
 
         getServer().getPluginManager().registerEvents(new ItemCollectListener(this), this);
         getServer().getPluginManager().registerEvents(new ItemUseListener(this), this);
@@ -253,7 +265,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
         //        itemEntity.setPickupDelay(Integer.MAX_VALUE); // Prevent the item from being picked up
         //        player.addPassenger(itemEntity);
 
-        TextComponent message = new TextComponent(ChatColor.DARK_AQUA + "Collect: ");
+        TextComponent message = new TextComponent("Collect: ");
         TextComponent link = new TextComponent(ChatColor.DARK_AQUA + "" + ChatColor.UNDERLINE + "[" + itemName + "]");
         link.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://minecraft.wiki/w/" + itemNameForWiki));
         message.addExtra(link);
@@ -279,7 +291,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
             player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR, new TextComponent(ChatColor.RED + "" + ChatColor.BOLD + "00:00" +
                     ":00"));
             player.playSound(player.getLocation(), Sound.ITEM_GOAT_HORN_SOUND_0, 1, 1);
-            player.sendMessage(ChatColor.GREEN + "Time's up! The challenge has ended!");
+            player.sendMessage("Time's up! The " + ChatColor.GOLD + "Challenge has ended!");
             if (!player.getPassengers().isEmpty()) {
                 player.getPassengers().forEach(passenger -> {
                     passenger.setVisibleByDefault(false);
@@ -359,9 +371,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
 
     public void successfullPickup(Player player, Material itemPickedUp, boolean wasSkipItem, boolean skippedByAdmin) {
 
-        String itemReadable = Arrays.stream(itemPickedUp.name().split("_"))
-                .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1).toLowerCase())
-                .collect(Collectors.joining(" "));
+        String itemReadable = beautifyMaterialName(itemPickedUp.name());
         if (!skippedByAdmin) {
             for (Player playerOnline : Bukkit.getOnlinePlayers()) {
                 Team teamOfPlayer = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId());

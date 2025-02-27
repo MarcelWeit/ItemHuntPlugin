@@ -40,3 +40,9 @@ commands:
     description: Gives x amount of updraft items
     default: op
     permission: itemhuntplugin.giveupdraftitem
+  playervoteskipitem:
+    description: Votes to skip the item
+  voteskipitemyes:
+    description: Votes to skip the item
+  voteskipitemno:
+    description: Votes to not skip the item
