@@ -37,7 +37,8 @@ An operator on the server enters the /startchallenge command.
 ### Additional Information about Parameters
 You can choose to play without updraft items, skip items or backpack if you set the amounts to 0.  
 The skip items are placed in the bag of each team when the challenge starts.  
-The challenge begins and each team must collect a random item. If one of the team members collects the item, the whole team must collect a new item and they will receive a point.  
+The challenge begins and each team must collect a random item.  
+If one of the team members collects the item, the whole team must collect a new item and they will receive a point.  
 
 ![](https://i.imgur.com/t0aDeyy.png)
 
@@ -52,7 +53,7 @@ A **link** is provided in chat to the **Minecraft wiki** for more information on
 The **skip item** can be used at any time to skip the current objective for the team. Using the skip item is still worth one point.  
 **KeepInventory** is enabled.  
 Each team has its own **backpack** where they can store items.  
-**1.4: Voting System** to skip the night. Only if all players in the world pressed yes the night is skipped.
+**1.4: Voting System** to skip the night. Only if all players in the world pressed yes the night is skipped.  
 If you set the amount of updraft items to greater than zero each team will get an **additional updraft item** after obtaining the target item.
 
 ![](https://i.imgur.com/73318Vl.png)
@@ -70,5 +71,7 @@ Players can then click on a **link in chat** to reopen the inventory and use but
 - /resetchallenge - Resets the whole challenge
 - /results - Shows the result for the last place team after the timer has run out. You can use the command again to show the next place.
 - /timer <resume | pause>
+- /startvoteskipnight - Can be used if the vote failed previously and you want to vote again
+- /giveupdraftitem <targetPlayer> <amount>
 
 The Plugin is inspired by the item force battles of BastiGHG.
