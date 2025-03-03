@@ -25,11 +25,9 @@ Each player joins a Team by using the red wool in their hotbar or entering the /
 
 ![Drag Racing](https://i.imgur.com/9XBPX4A.png)
 
-/Image
-
 An operator on the server enters the /startchallenge command.
 
-/Image
+![Drag Racing](https://i.imgur.com/dEfGnsO.png)
 
 ## Parameters:
 - Time in seconds
@@ -42,11 +40,12 @@ An operator on the server enters the /startchallenge command.
 
 The challenge begins and each team must collect a random item. If one of the team members collects the item, the whole team must collect a new item and they will receive a point.
 
-/Image
+![Drag Racing](https://i.imgur.com/dEfGnsO.png)
 
 The tabbed menu shows who is on which team and what items they need to collect.
 
-/Image
+
+![Drag Racing](https://i.imgur.com/t0aDeyy.png)
 
 A link is provided in chat to the Minecraft wiki for more information on the item.
 A passenger above the player's head also shows the current item to be collected [In Development might bug].
@@ -57,13 +56,13 @@ KeepInventory is enabled.
 
 Each team has its own backpack where they can store items.
 
-/Image
+![Drag Racing](https://i.imgur.com/S21SYVw.png)
 
 If you set the amount of updraft items to greater than zero each team will get an additional updraft item after obtaining the target item.
 
 When the timer has run out, the server operator can use the results command to display the results. The command must be run for each place, starting with the last place. An inventory will be displayed showing when the item was collected and by whom. Players can then click on a link in chat to reopen the inventory and use buttons to switch pages.
 
-/Image
+![Drag Racing](https://i.imgur.com/73318Vl.png)
 
 ## Commands for Server Operator
 - /skipitem <targetplayer> - Can be used by admin if the target item is too difficult to obtain
