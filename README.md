@@ -39,12 +39,12 @@ You can choose to play without updraft items, skip items or backpack if you set 
 The skip items are placed in the bag of each team when the challenge starts.  
 The challenge begins and each team must collect a random item. If one of the team members collects the item, the whole team must collect a new item and they will receive a point.  
 
-![](https://i.imgur.com/dEfGnsO.png)
+![](https://i.imgur.com/t0aDeyy.png)
 
 The tabbed menu shows who is on which team and what items they need to collect.
 
 
-![](https://i.imgur.com/t0aDeyy.png)
+![](https://i.imgur.com/S21SYVw.png)
 
 ### Additional Information during the challenge
 A **link** is provided in chat to the **Minecraft wiki** for more information on the item.  
@@ -55,7 +55,7 @@ Each team has its own **backpack** where they can store items.
 **1.4: Voting System** to skip the night. Only if all players in the world pressed yes the night is skipped.
 If you set the amount of updraft items to greater than zero each team will get an **additional updraft item** after obtaining the target item.
 
-![](https://i.imgur.com/S21SYVw.png)
+![](https://i.imgur.com/73318Vl.png)
 
 ### Additional Information on when the Challenge has ended
 When the timer has run out, the server operator can use the **results command** to display the results.  
@@ -63,7 +63,7 @@ The command must be run for each place, starting with the last place.
 An inventory will be displayed showing when the item was collected and by whom.  
 Players can then click on a **link in chat** to reopen the inventory and use buttons to switch pages.  
 
-![](https://i.imgur.com/73318Vl.png)
+![](https://i.imgur.com/6PPliKw.png)
 
 ## Commands for Server Operator
 - /skipitem <targetplayer> - Can be used by admin if the target item is too difficult to obtain
