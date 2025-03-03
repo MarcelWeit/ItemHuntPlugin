@@ -1,3 +1,5 @@
+# Item Hunt Plugin
+
 ### Your feedback is welcome! This is an early development version and I plan to update it if there is enough interest.
 
 ### Did you enjoy the plugin? Buy me a coffee on ko-fi to support further development!
