@@ -23,6 +23,7 @@ Disclaimer: You might want to allow flight on your server in the server.properti
 ## Setup
 Each player joins a Team by using the red wool in their hotbar or entering the /teams command.
 
+https://i.imgur.com/9XBPX4A.png
 /Image
 
 An operator on the server enters the /startchallenge command.
