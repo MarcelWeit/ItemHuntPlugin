@@ -22,11 +22,11 @@ Recommended: 2 Hours, 5 Skip Items, With Elytra and No Hunger, 5 Updraft Items, 
 Setup
 Each player joins a Team by using the red wool in their hotbar or entering the /teams command.
 
- 
+/Image
 
 An operator on the server enters the /startchallenge command.
 
-  
+/Image
 
 Parameters:
 Time in seconds
@@ -39,11 +39,11 @@ You can choose to play without updraft items, skip items or backpack if you set 
 
 The challenge begins and each team must collect a random item. If one of the team members collects the item, the whole team must collect a new item and they will receive a point.
 
-
+/Image
 
 The tabbed menu shows who is on which team and what items they need to collect.
 
-
+/Image
 
 A link is provided in chat to the Minecraft wiki for more information on the item.
 A passenger above the player's head also shows the current item to be collected [In Development might bug].
@@ -54,13 +54,13 @@ KeepInventory is enabled.
 
 Each team has its own backpack where they can store items.
 
-
+/Image
 
 If you set the amount of updraft items to greater than zero each team will get an additional updraft item after obtaining the target item.
 
 When the timer has run out, the server operator can use the results command to display the results. The command must be run for each place, starting with the last place. An inventory will be displayed showing when the item was collected and by whom. Players can then click on a link in chat to reopen the inventory and use buttons to switch pages.
 
-
+/Image
 
 Commands for Server Operator
 /skipitem <targetplayer> - Can be used by admin if the target item is too difficult to obtain
