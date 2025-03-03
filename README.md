@@ -2,16 +2,17 @@
 
 ### Your feedback is welcome! This is an early development version and I plan to update it if there is enough interest.
 
-### Did you enjoy the plugin? Buy me a coffee on ko-fi to support further development!
+### Did you like the plugin? Buy me a coffee on ko-fi to support further development!
 
-Disclaimer: You might want to allow flight on your server in the server.properties before using the upflight item.
+**Disclaimer**: You might want to allow flight on your server in the server.properties before using the upflight item.
 
 ## Features
 - Up to 9 teams with any number of players
 - Teams can have one member (1v1v1 is possible)
 - Collect a random item out of 1000 different items
 - End items and hard to get items are removed
-- Team Backpack
+- Team backpack
+- Game Mode
 
 ## Configurable
 - Timer
@@ -20,16 +21,17 @@ Disclaimer: You might want to allow flight on your server in the server.properti
 - Yes / No Hunger
 - Amount of updraft items to jump into the air
 - Backpack size
-- Recommended: 2 Hours, 5 Skip Items, With Elytra and No Hunger, 5 Updraft Items, Backpacksize 27 for one player 54 for 2+
+- Recommended: 2 hours, 5 skip items, with elytra and no hunger, 5 updraft items, backpacksize 27 for one player 54 for 2+
+- New with 1.4: Gamemode 0 or 1 (0: random order, 1: same order of items)
 
 ## Setup
-Each player joins a Team by using the red wool in their hotbar or entering the /teams command.
+Each player joins a Team by using the red wool they got when joining the server in their hotbar or by entering the /teams command.
 
-![Drag Racing](https://i.imgur.com/9XBPX4A.png)
+![](https://i.imgur.com/9XBPX4A.png)
 
 An operator on the server enters the /startchallenge command.
 
-![Drag Racing](https://i.imgur.com/dEfGnsO.png)
+![](https://i.imgur.com/dEfGnsO.png)
 
 ## Parameters:
 - Time in seconds
@@ -42,12 +44,12 @@ An operator on the server enters the /startchallenge command.
 
 The challenge begins and each team must collect a random item. If one of the team members collects the item, the whole team must collect a new item and they will receive a point.
 
-![Drag Racing](https://i.imgur.com/dEfGnsO.png)
+![](https://i.imgur.com/dEfGnsO.png)
 
 The tabbed menu shows who is on which team and what items they need to collect.
 
 
-![Drag Racing](https://i.imgur.com/t0aDeyy.png)
+![](https://i.imgur.com/t0aDeyy.png)
 
 A link is provided in chat to the Minecraft wiki for more information on the item.
 A passenger above the player's head also shows the current item to be collected [In Development might bug].
@@ -58,13 +60,13 @@ KeepInventory is enabled.
 
 Each team has its own backpack where they can store items.
 
-![Drag Racing](https://i.imgur.com/S21SYVw.png)
+![](https://i.imgur.com/S21SYVw.png)
 
 If you set the amount of updraft items to greater than zero each team will get an additional updraft item after obtaining the target item.
 
 When the timer has run out, the server operator can use the results command to display the results. The command must be run for each place, starting with the last place. An inventory will be displayed showing when the item was collected and by whom. Players can then click on a link in chat to reopen the inventory and use buttons to switch pages.
 
-![Drag Racing](https://i.imgur.com/73318Vl.png)
+![](https://i.imgur.com/73318Vl.png)
 
 ## Commands for Server Operator
 - /skipitem <targetplayer> - Can be used by admin if the target item is too difficult to obtain
