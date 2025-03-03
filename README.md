@@ -34,6 +34,7 @@ An operator on the server enters the /startchallenge command.
 
 **Recommended**: 2 hours, 5 skip items, with elytra and no hunger, 5 updraft items, backpacksize 27 for one player 54 for 2+
 
+### Additional Information about Parameters
 You can choose to play without updraft items, skip items or backpack if you set the amounts to 0.  
 The skip items are placed in the bag of each team when the challenge starts.  
 The challenge begins and each team must collect a random item. If one of the team members collects the item, the whole team must collect a new item and they will receive a point.  
@@ -45,17 +46,18 @@ The tabbed menu shows who is on which team and what items they need to collect.
 
 ![](https://i.imgur.com/t0aDeyy.png)
 
+### Additional Information during the challenge
 A **link** is provided in chat to the **Minecraft wiki** for more information on the item.  
 ~~A passenger above the player's head also shows the current item to be collected [In Development might bug].~~  
 The **skip item** can be used at any time to skip the current objective for the team. Using the skip item is still worth one point.  
 **KeepInventory** is enabled.  
 Each team has its own **backpack** where they can store items.  
 **1.4: Voting System** to skip the night. Only if all players in the world pressed yes the night is skipped.
+If you set the amount of updraft items to greater than zero each team will get an **additional updraft item** after obtaining the target item.
 
 ![](https://i.imgur.com/S21SYVw.png)
 
-If you set the amount of updraft items to greater than zero each team will get an **additional updraft item** after obtaining the target item.
-
+### Additional Information on when the Challenge has ended
 When the timer has run out, the server operator can use the **results command** to display the results.  
 The command must be run for each place, starting with the last place.  
 An inventory will be displayed showing when the item was collected and by whom.  
