@@ -2,7 +2,7 @@
 
 ### Your feedback is welcome! This is an early development version and I plan to update it if there is enough interest.
 
-### Did you like the plugin? Buy me a coffee on ko-fi to support further development!
+### Did you like the plugin? Buy me a coffee on [ko-fi](https://ko-fi.com/weiti) to support further development!
 
 **Disclaimer**: You might want to allow flight on your server in the server.properties before using the upflight item.
 
