@@ -23,7 +23,7 @@ An operator on the server enters the /startchallenge command.
 
 ![](https://i.imgur.com/dEfGnsO.png)
 
-## Parameters:
+### Parameters:
 - Time in seconds
 - Amount of skip items for each team
 - With Elytra as Start Item (Yes / No)
