@@ -151,7 +151,7 @@ public class ShowResultsCommand implements CommandExecutor {
                 listcounter++;
                 placement++;
             }
-        }.runTaskTimer(plugin, 0L, 5L); // 0L initial delay, 20L (1 second) between iterations
+        }.runTaskTimer(plugin, 0L, 20L); // 0L initial delay, 20L (1 second) between iterations
     }
 
     public void resetScores() {

@@ -1,4 +1,4 @@
-package weitma.itemHuntPlugin.Commands;
+package weitma.itemHuntPlugin.Commands.nightskip;
 
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -57,7 +57,6 @@ public class NightSkipVoteCommand implements CommandExecutor {
                     playersVotedNo = true;
                 }
             }
-            ;
             if (playersVotedNo) {
                 StringBuilder message = new StringBuilder(ChatColor.RED + "The Night was not skipped. The following players voted No: ");
                 for (int i = 0; i < votedNo.size(); i++) {
@@ -69,7 +68,6 @@ public class NightSkipVoteCommand implements CommandExecutor {
                 message.append(". Buuuuh!");
                 Bukkit.getOnlinePlayers().forEach(
                         onlinePlayer -> onlinePlayer.sendMessage(message.toString()));
-                nightSkipVotes.clear();
             } else {
                 for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
                     onlinePlayer.sendMessage("Everyone voted to skip the Night!");
@@ -80,6 +78,7 @@ public class NightSkipVoteCommand implements CommandExecutor {
                 }
             }
 
+            nightSkipVotes.clear();
             voteRunning = false;
 
         }

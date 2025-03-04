@@ -46,7 +46,8 @@ public class PlayerVoteSkipItemUseCommand implements CommandExecutor {
                         Material itemToCollect = plugin.getItemToCollect(team);
                         String itemName = ItemHuntPlugin.beautifyMaterialName(itemToCollect.name());
 
-                        teamPlayer.sendMessage(ChatColor.BLUE + player.getName() + " wants to skip " + itemName);
+                        ChatColor teamColor = team.getChatColor();
+                        teamPlayer.sendMessage(teamColor + player.getName() + ChatColor.RESET + " wants to skip " + ChatColor.DARK_RED + itemName);
 
                         if (teamMember != voteInitiators.get(team).getUniqueId()) {
                             TextComponent messsageSkipItem = new TextComponent("Skip " + itemName + "?");
@@ -67,10 +68,16 @@ public class PlayerVoteSkipItemUseCommand implements CommandExecutor {
                     break;
                 case "voteskipitemyes":
                     votes.get(team).put(player, true);
+                    team.getTeamMembers().forEach(teamMember -> {
+                        plugin.getServer().getPlayer(teamMember).sendMessage(player.getName() + " voted Yes!");
+                    });
                     checkIfEveryoneVoted(team);
                     break;
                 case "voteskipitemno":
                     votes.get(team).put(player, false);
+                    team.getTeamMembers().forEach(teamMember -> {
+                        plugin.getServer().getPlayer(teamMember).sendMessage(player.getName() + " voted No!");
+                    });
                     checkIfEveryoneVoted(team);
                     break;
                 default:

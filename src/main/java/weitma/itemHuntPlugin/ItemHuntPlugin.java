@@ -16,6 +16,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import weitma.itemHuntPlugin.Commands.*;
+import weitma.itemHuntPlugin.Commands.nightskip.NightSkipVoteCommand;
+import weitma.itemHuntPlugin.Commands.nightskip.PlayerVoteSkipNightFalseCommand;
+import weitma.itemHuntPlugin.Commands.nightskip.PlayerVoteSkipNightTrueCommand;
 import weitma.itemHuntPlugin.Listeners.*;
 import weitma.itemHuntPlugin.Utils.InGameTimer;
 import weitma.itemHuntPlugin.Utils.Team;
@@ -32,7 +35,8 @@ public final class ItemHuntPlugin extends JavaPlugin {
     public static final int TEAM_ITEM = 1000004;
 
     public static final int RANDOM_ORDER_GAMEMODE = 0;
-    public static final int SAME_ORDER_GAMEMODE = 1;
+    public static final int SAME_ORDER_GAMEMODE_HIDDEN_PROGRESS = 1;
+    public static final int SAME_ORDER_GAMEMODE_BE_THE_FIRST = 2;
 
     private static final ArrayList<Material> itemCollectOrder = new ArrayList<>();
     private static final HashMap<Team, Material> itemToCollectByTeam = new HashMap<>();
@@ -126,7 +130,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
     // Excluded: Silk Touch obtainables, Eggs, Music, Disc, End Items, Command, Unobtainable
     public void generateNewRandomMaterialToCollect(Team team) {
 
-        if (gamemode == SAME_ORDER_GAMEMODE) {
+        if (gamemode == SAME_ORDER_GAMEMODE_HIDDEN_PROGRESS) {
             if (getItemsCollectedByTeam(team).size() < itemCollectOrder.size()) {
                 itemToCollectByTeam.put(team, itemCollectOrder.get(getItemsCollectedByTeam(team).size()));
                 Bukkit.getLogger().info("Same Order: " + getItemToCollect(team).toString());
@@ -226,6 +230,8 @@ public final class ItemHuntPlugin extends JavaPlugin {
                 .filter(material -> !material.name().contains("HORSE"))
                 .filter(material -> !material.name().contains("CREAKING"))
                 .filter(material -> !material.name().contains("RESIN"))
+                .filter(material -> !material.name().contains("PALE"))
+                .filter(material -> !material.name().contains("EYEBLOSSOM"))
                 .toList();
 
         // pickable 961 items
@@ -271,7 +277,9 @@ public final class ItemHuntPlugin extends JavaPlugin {
         message.addExtra(link);
         player.spigot().sendMessage(message);
 
-        player.setPlayerListName(displayNames.get(playerID) + ChatColor.GOLD + " [" + itemName + "]");
+        if (gamemode != SAME_ORDER_GAMEMODE_HIDDEN_PROGRESS) {
+            player.setPlayerListName(displayNames.get(playerID) + ChatColor.GOLD + " [" + itemName + "]");
+        }
     }
 
     public boolean isChallengeStarted() {
@@ -365,6 +373,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
     public void skipItemToCollect(UUID uuid) {
         ItemStack itemToCollect = new ItemStack(getItemToCollect(TeamManager.getInstance().getTeamOfPlayer(uuid)));
         Player p = Bukkit.getPlayer(uuid);
+        assert p != null;
         p.getInventory().addItem(itemToCollect);
         successfullPickup(p, itemToCollect.getType(), true, false);
     }
@@ -372,14 +381,16 @@ public final class ItemHuntPlugin extends JavaPlugin {
     public void successfullPickup(Player player, Material itemPickedUp, boolean wasSkipItem, boolean skippedByAdmin) {
 
         String itemReadable = beautifyMaterialName(itemPickedUp.name());
-        if (!skippedByAdmin) {
-            for (Player playerOnline : Bukkit.getOnlinePlayers()) {
-                Team teamOfPlayer = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId());
-                playerOnline.sendMessage(teamOfPlayer.getChatColor() + teamOfPlayer.getTeamName() + " (" + player.getName() + ") " + ChatColor.WHITE + "collected " + itemReadable);
-            }
-        } else {
-            for (Player playerOnline : Bukkit.getOnlinePlayers()) {
-                playerOnline.sendMessage(ChatColor.RED + itemReadable + " was skipped by Admin for " + TeamManager.getInstance().getTeamOfPlayer(playerOnline.getUniqueId()).getTeamName() + "!");
+        if (gamemode != SAME_ORDER_GAMEMODE_HIDDEN_PROGRESS) {
+            if (!skippedByAdmin) {
+                for (Player playerOnline : Bukkit.getOnlinePlayers()) {
+                    Team teamOfPlayer = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId());
+                    playerOnline.sendMessage(teamOfPlayer.getChatColor() + teamOfPlayer.getTeamName() + " (" + player.getName() + ") " + ChatColor.WHITE + "collected " + itemReadable);
+                }
+            } else {
+                for (Player playerOnline : Bukkit.getOnlinePlayers()) {
+                    playerOnline.sendMessage(ChatColor.RED + itemReadable + " was skipped by Admin for " + TeamManager.getInstance().getTeamOfPlayer(playerOnline.getUniqueId()).getTeamName() + "!");
+                }
             }
         }
 
@@ -402,10 +413,15 @@ public final class ItemHuntPlugin extends JavaPlugin {
         for (UUID uuidInTeam : TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId()).getTeamMembers()) {
             Player playerInTeam = Bukkit.getPlayer(uuidInTeam);
             assert playerInTeam != null;
-            playerInTeam.getPassengers().forEach(passenger -> {
-                passenger.setVisibleByDefault(false);
-                player.removePassenger(passenger);
-            });
+            //            playerInTeam.getPassengers().forEach(passenger -> {
+            //                passenger.setVisibleByDefault(false);
+            //                player.removePassenger(passenger);
+            //            });
+
+            ChatColor teamColor = teamOfPlayer.getChatColor();
+            if (gamemode == SAME_ORDER_GAMEMODE_HIDDEN_PROGRESS) {
+                playerInTeam.sendMessage(teamColor + player.getName() + ChatColor.RESET + " collected " + itemReadable);
+            }
 
             showItemToCollect(uuidInTeam);
             playerInTeam.playSound(player.getLocation(), "entity.experience_orb.pickup", 1, 1);
@@ -471,12 +487,9 @@ public final class ItemHuntPlugin extends JavaPlugin {
                             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "startvoteskipnight");
                             nightSkipVoteCommand.setVoteRunning(true);
                         }
-                    }
-                    if (world.getTime() < 500) {
+                    } else if (world.getTime() < 500) {
                         Bukkit.getLogger().info("Day started");
                         if (nightSkipVoteCommand.isVoteRunning()) {
-                            nightSkipVoteCommand.setVoteRunning(false);
-                            nightSkipVoteCommand.setPlayersVotedNo(false);
                             Bukkit.getOnlinePlayers().forEach(player ->
                                     player.sendMessage(ChatColor.RED + "Vote has been canceled since its already day"));
                         }
