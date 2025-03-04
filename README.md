@@ -39,6 +39,7 @@ You can choose to play without updraft items, skip items or backpack if you set 
 The skip items are placed in the bag of each team when the challenge starts.  
 The challenge begins and each team must collect a random item.  
 If one of the team members collects the item, the whole team must collect a new item and they will receive a point.  
+If you choose the same order Gamemode the progress of each team is hidden for all the other teams.  
 
 ![](https://i.imgur.com/t0aDeyy.png)
 
