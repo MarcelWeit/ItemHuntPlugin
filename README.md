@@ -30,7 +30,7 @@ An operator on the server enters the /startchallenge command.
 - With Hunger (No= No Hunger, Yes = With Hunger)
 - Amount of updraft items for each player
 - Backpack size (0 <= n*9 <= 54)
-- New with 1.4: Gamemode 0 or 1 (0: random order, 1: same order of items)
+- New with 1.4: Gamemode 0, 1 or 2(0: random order, 1: same order of items, 2: same order be the first)
 
 **Recommended**: 2 hours, 5 skip items, with elytra and no hunger, 5 updraft items, backpacksize 27 for one player 54 for 2+
 
