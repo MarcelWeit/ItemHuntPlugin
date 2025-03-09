@@ -1,4 +1,4 @@
-package weitma.itemHuntPlugin.Commands;
+package weitma.itemHuntPlugin.commands;
 
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -19,14 +19,14 @@ public class AdminSkipItemCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
-        if (sender instanceof Player player){
-            if(args.length != 1){
+        if (sender instanceof Player player) {
+            if (args.length != 1) {
                 player.sendMessage("Usage: /skipitem <player>");
                 return false;
             }
 
             Player target = plugin.getServer().getPlayer(args[0]);
-            if(target == null){
+            if (target == null) {
                 player.sendMessage("Player not found!");
                 return false;
             }

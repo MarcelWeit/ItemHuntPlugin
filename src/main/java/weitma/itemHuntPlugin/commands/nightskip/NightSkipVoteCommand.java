@@ -1,4 +1,4 @@
-package weitma.itemHuntPlugin.Commands.nightskip;
+package weitma.itemHuntPlugin.commands.nightskip;
 
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;

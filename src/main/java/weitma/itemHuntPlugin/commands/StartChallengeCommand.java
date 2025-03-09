@@ -1,4 +1,4 @@
-package weitma.itemHuntPlugin.Commands;
+package weitma.itemHuntPlugin.commands;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -64,8 +64,8 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
         int backpackSize = Integer.parseInt(args[5]);
         int gamemode = Integer.parseInt(args[6]);
 
-        if (gamemode != 0 && gamemode != 1) {
-            sender.sendMessage(ChatColor.RED + "Gamemode must be either 0 or 1");
+        if (gamemode != 0 && gamemode != 1 && gamemode != 2) {
+            sender.sendMessage(ChatColor.RED + "Gamemode must be either 0 or 1 or 2");
             return false;
         }
 
@@ -106,8 +106,16 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
         Bukkit.getLogger().info("Generating new random materials for all teams");
 
         HashMap<Team, ItemStack> backpacks = new HashMap<>();
+
+        Material item = plugin.getRandomMaterial();
         for (Team teamWithPlayer : TeamManager.getInstance().getTeamsWithPlayers()) {
-            plugin.generateNewRandomMaterialToCollect(teamWithPlayer);
+
+            if (plugin.getGamemode() == ItemHuntPlugin.SAME_ORDER_GAMEMODE_BE_THE_FIRST) {
+                plugin.addItemToCollectByTeam(teamWithPlayer, item);
+            } else {
+                plugin.addItemToCollectByTeam(teamWithPlayer, plugin.getRandomMaterial());
+            }
+
             ItemStack backpack = plugin.createBackpack(teamWithPlayer, backpackSize, skipItemsAmount);
             backpacks.put(teamWithPlayer, backpack);
         }
@@ -162,7 +170,7 @@ public class StartChallengeCommand implements CommandExecutor, TabCompleter {
         } else if (length == 6) {
             return List.of("9", "18", "27", "36", "45", "54");
         } else if (length == 7) {
-            return List.of("0", "1");
+            return List.of("0", "1", "2");
         }
         return null;
     }

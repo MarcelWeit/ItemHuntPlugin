@@ -1,4 +1,4 @@
-package weitma.itemHuntPlugin.Commands;
+package weitma.itemHuntPlugin.commands;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -21,18 +21,18 @@ public class TimerCommands implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
 
-        if(sender instanceof Player player){
+        if (sender instanceof Player player) {
             String usage = ChatColor.RED + "Usage: /timer <resume/pause>";
-            if(args.length != 1){
+            if (args.length != 1) {
                 player.sendMessage(usage);
                 return false;
             }
 
             String arg = args[0];
 
-            if(arg.equalsIgnoreCase("resume")){
+            if (arg.equalsIgnoreCase("resume")) {
                 inGameTimer.resumeTimer();
-            } else if(arg.equalsIgnoreCase("pause")){
+            } else if (arg.equalsIgnoreCase("pause")) {
                 inGameTimer.pauseTimer();
             } else {
                 player.sendMessage(usage);

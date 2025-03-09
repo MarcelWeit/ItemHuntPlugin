@@ -15,14 +15,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import weitma.itemHuntPlugin.Commands.*;
-import weitma.itemHuntPlugin.Commands.nightskip.NightSkipVoteCommand;
-import weitma.itemHuntPlugin.Commands.nightskip.PlayerVoteSkipNightFalseCommand;
-import weitma.itemHuntPlugin.Commands.nightskip.PlayerVoteSkipNightTrueCommand;
 import weitma.itemHuntPlugin.Listeners.*;
 import weitma.itemHuntPlugin.Utils.InGameTimer;
 import weitma.itemHuntPlugin.Utils.Team;
 import weitma.itemHuntPlugin.Utils.TeamManager;
+import weitma.itemHuntPlugin.commands.*;
+import weitma.itemHuntPlugin.commands.nightskip.NightSkipVoteCommand;
+import weitma.itemHuntPlugin.commands.nightskip.PlayerVoteSkipNightFalseCommand;
+import weitma.itemHuntPlugin.commands.nightskip.PlayerVoteSkipNightTrueCommand;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,10 +64,9 @@ public final class ItemHuntPlugin extends JavaPlugin {
     }
 
     public static String beautifyMaterialName(String materialName) {
-        String itemName = Arrays.stream(materialName.split("_"))
+        return Arrays.stream(materialName.split("_"))
                 .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1).toLowerCase())
                 .collect(Collectors.joining(" "));
-        return itemName;
     }
 
     @Override
@@ -128,15 +127,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
 
     // New 1.21 items are included
     // Excluded: Silk Touch obtainables, Eggs, Music, Disc, End Items, Command, Unobtainable
-    public void generateNewRandomMaterialToCollect(Team team) {
-
-        if (gamemode == SAME_ORDER_GAMEMODE_HIDDEN_PROGRESS) {
-            if (getItemsCollectedByTeam(team).size() < itemCollectOrder.size()) {
-                itemToCollectByTeam.put(team, itemCollectOrder.get(getItemsCollectedByTeam(team).size()));
-                Bukkit.getLogger().info("Same Order: " + getItemToCollect(team).toString());
-                return;
-            }
-        }
+    public Material getRandomMaterial() {
 
         List<Material> pickableItems = Arrays.stream(Material.values())
                 .filter(Material::isItem)
@@ -236,10 +227,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
 
         // pickable 961 items
         // material.values 1537 items
-        Material material = pickableItems.get((int) (Math.random() * pickableItems.size()));
-
-        itemCollectOrder.add(material);
-        itemToCollectByTeam.put(team, material);
+        return pickableItems.get((int) (Math.random() * pickableItems.size()));
     }
 
     public void showItemToCollect(UUID playerID) {
@@ -381,16 +369,16 @@ public final class ItemHuntPlugin extends JavaPlugin {
     public void successfullPickup(Player player, Material itemPickedUp, boolean wasSkipItem, boolean skippedByAdmin) {
 
         String itemReadable = beautifyMaterialName(itemPickedUp.name());
-        if (gamemode != SAME_ORDER_GAMEMODE_HIDDEN_PROGRESS) {
-            if (!skippedByAdmin) {
+        if (!skippedByAdmin) {
+            if (gamemode != SAME_ORDER_GAMEMODE_HIDDEN_PROGRESS) {
                 for (Player playerOnline : Bukkit.getOnlinePlayers()) {
                     Team teamOfPlayer = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId());
                     playerOnline.sendMessage(teamOfPlayer.getChatColor() + teamOfPlayer.getTeamName() + " (" + player.getName() + ") " + ChatColor.WHITE + "collected " + itemReadable);
                 }
-            } else {
-                for (Player playerOnline : Bukkit.getOnlinePlayers()) {
-                    playerOnline.sendMessage(ChatColor.RED + itemReadable + " was skipped by Admin for " + TeamManager.getInstance().getTeamOfPlayer(playerOnline.getUniqueId()).getTeamName() + "!");
-                }
+            }
+        } else {
+            for (Player playerOnline : Bukkit.getOnlinePlayers()) {
+                playerOnline.sendMessage(ChatColor.RED + itemReadable + " was skipped by Admin for " + TeamManager.getInstance().getTeamOfPlayer(playerOnline.getUniqueId()).getTeamName() + "!");
             }
         }
 
@@ -403,31 +391,53 @@ public final class ItemHuntPlugin extends JavaPlugin {
         } else {
             itemPickedUpStackMeta.setLore(Arrays.asList("Collected by " + player.getName() + " at", inGameTimer.getCurrentTimer()));
         }
+
         itemPickedUpStack.setItemMeta(itemPickedUpStackMeta);
         Team teamOfPlayer = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId());
         if (!skippedByAdmin) {
             addItemToCollectedByTeam(teamOfPlayer, itemPickedUpStack);
         }
-        generateNewRandomMaterialToCollect(teamOfPlayer);
+        Material nextItem = getRandomMaterial();
+
+        if (gamemode == SAME_ORDER_GAMEMODE_HIDDEN_PROGRESS) {
+            if (getItemsCollectedByTeam(teamOfPlayer).size() < itemCollectOrder.size()) {
+                itemToCollectByTeam.put(teamOfPlayer, itemCollectOrder.get(getItemsCollectedByTeam(teamOfPlayer).size()));
+            } else {
+                itemToCollectByTeam.put(teamOfPlayer, nextItem);
+                itemCollectOrder.add(nextItem);
+            }
+        } else {
+            itemToCollectByTeam.put(teamOfPlayer, nextItem);
+        }
 
         for (UUID uuidInTeam : TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId()).getTeamMembers()) {
             Player playerInTeam = Bukkit.getPlayer(uuidInTeam);
             assert playerInTeam != null;
-            //            playerInTeam.getPassengers().forEach(passenger -> {
-            //                passenger.setVisibleByDefault(false);
-            //                player.removePassenger(passenger);
-            //            });
 
-            ChatColor teamColor = teamOfPlayer.getChatColor();
             if (gamemode == SAME_ORDER_GAMEMODE_HIDDEN_PROGRESS) {
+                ChatColor teamColor = teamOfPlayer.getChatColor();
                 playerInTeam.sendMessage(teamColor + player.getName() + ChatColor.RESET + " collected " + itemReadable);
             }
 
             showItemToCollect(uuidInTeam);
             playerInTeam.playSound(player.getLocation(), "entity.experience_orb.pickup", 1, 1);
 
-            if (isWithUpdraftItem() && !wasSkipItem) {
+            if (isWithUpdraftItem()) {
                 playerInTeam.getInventory().addItem(getUpdraftItem(1));
+            }
+        }
+
+        if (gamemode == SAME_ORDER_GAMEMODE_BE_THE_FIRST) {
+            List<Team> teamsWithPlayers = TeamManager.getInstance().getTeamsWithPlayers();
+            teamsWithPlayers.removeIf(team -> team.getTeamName().equals(teamOfPlayer.getTeamName()));
+            for (Team team : teamsWithPlayers) {
+                itemToCollectByTeam.put(team, nextItem);
+                for (UUID uuidInTeam : team.getTeamMembers()) {
+                    Player playerInTeam = Bukkit.getPlayer(uuidInTeam);
+                    assert playerInTeam != null;
+                    showItemToCollect(uuidInTeam);
+                    playerInTeam.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1, 1);
+                }
             }
         }
     }
@@ -487,7 +497,7 @@ public final class ItemHuntPlugin extends JavaPlugin {
                             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "startvoteskipnight");
                             nightSkipVoteCommand.setVoteRunning(true);
                         }
-                    } else if (world.getTime() < 500) {
+                    } else if (world.getTime() < 500 && world.getTime() > 0) {
                         Bukkit.getLogger().info("Day started");
                         if (nightSkipVoteCommand.isVoteRunning()) {
                             Bukkit.getOnlinePlayers().forEach(player ->
@@ -501,7 +511,15 @@ public final class ItemHuntPlugin extends JavaPlugin {
         }.runTaskTimer(this, 0, 200);
     }
 
+    public int getGamemode() {
+        return this.gamemode;
+    }
+
     public void setGamemode(int gamemode) {
         this.gamemode = gamemode;
+    }
+
+    public void addItemToCollectByTeam(Team team, Material material) {
+        itemToCollectByTeam.put(team, material);
     }
 }

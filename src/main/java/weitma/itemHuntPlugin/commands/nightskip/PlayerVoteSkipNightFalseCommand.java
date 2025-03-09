@@ -1,4 +1,4 @@
-package weitma.itemHuntPlugin.Commands.nightskip;
+package weitma.itemHuntPlugin.commands.nightskip;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -21,7 +21,12 @@ public class PlayerVoteSkipNightFalseCommand implements CommandExecutor {
 
         if (sender instanceof Player player) {
             Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
-                ChatColor teamColor = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId()).getChatColor();
+                ChatColor teamColor = ChatColor.WHITE;
+                try {
+                    teamColor = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId()).getChatColor();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 onlinePlayer.sendMessage(teamColor + onlinePlayer.getName() + ChatColor.RESET + " has voted to not skip the night!");
             });
             nightSkipVoteCommand.vote(player, false);

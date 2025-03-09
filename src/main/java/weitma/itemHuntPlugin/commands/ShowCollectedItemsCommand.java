@@ -1,4 +1,4 @@
-package weitma.itemHuntPlugin.Commands;
+package weitma.itemHuntPlugin.commands;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -17,11 +17,10 @@ import java.util.*;
 
 public class ShowCollectedItemsCommand implements CommandExecutor {
 
-    private final ItemHuntPlugin plugin;
-
     private static final HashMap<Team, ArrayList<Inventory>> teamInventories = new HashMap<>();
-    Set<Integer> skipCellsInInv = new HashSet<>();
     private static final HashMap<Player, Integer> currentOpenInv = new HashMap<>();
+    private final ItemHuntPlugin plugin;
+    Set<Integer> skipCellsInInv = new HashSet<>();
 
     public ShowCollectedItemsCommand(ItemHuntPlugin plugin) {
         this.plugin = plugin;
@@ -50,7 +49,7 @@ public class ShowCollectedItemsCommand implements CommandExecutor {
         assert player != null;
 
         Team team = TeamManager.getInstance().getTeam(teamIndex);
-        if(!teamInventories.containsKey(team)) {
+        if (!teamInventories.containsKey(team)) {
             teamInventories.put(team, new ArrayList<>());
         }
 
@@ -74,7 +73,7 @@ public class ShowCollectedItemsCommand implements CommandExecutor {
                     inventory.setItem(i, it.next());
                 }
             }
-            if(it.hasNext()){
+            if (it.hasNext()) {
                 inventory.setItem(35, new ItemStack(Material.OAK_BUTTON));
             }
             loopCount++;
@@ -114,7 +113,7 @@ public class ShowCollectedItemsCommand implements CommandExecutor {
         return inventory;
     }
 
-    public void clearTeamInventories(){
+    public void clearTeamInventories() {
         teamInventories.clear();
     }
 

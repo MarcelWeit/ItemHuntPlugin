@@ -1,4 +1,4 @@
-package weitma.itemHuntPlugin.Commands;
+package weitma.itemHuntPlugin.commands;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;

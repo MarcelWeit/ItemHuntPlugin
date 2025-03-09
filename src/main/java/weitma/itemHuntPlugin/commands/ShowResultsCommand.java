@@ -1,4 +1,4 @@
-package weitma.itemHuntPlugin.Commands;
+package weitma.itemHuntPlugin.commands;
 
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -151,7 +151,7 @@ public class ShowResultsCommand implements CommandExecutor {
                 listcounter++;
                 placement++;
             }
-        }.runTaskTimer(plugin, 0L, 20L); // 0L initial delay, 20L (1 second) between iterations
+        }.runTaskTimer(plugin, 0L, 5L); // 0L initial delay, 20L (1 second) between iterations
     }
 
     public void resetScores() {

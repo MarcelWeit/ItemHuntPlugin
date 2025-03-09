@@ -1,4 +1,4 @@
-package weitma.itemHuntPlugin.Commands;
+package weitma.itemHuntPlugin.commands;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -20,11 +20,10 @@ import java.util.UUID;
 
 public class ShowTeamsCommand implements CommandExecutor {
 
+    private static Inventory teamInventory;
     private final ItemHuntPlugin plugin;
 
-    private static Inventory teamInventory;
-
-    public ShowTeamsCommand(ItemHuntPlugin plugin){
+    public ShowTeamsCommand(ItemHuntPlugin plugin) {
         this.plugin = plugin;
 
         teamInventory = Bukkit.createInventory(null, 9, ChatColor.BLACK + "Teams");
@@ -35,24 +34,7 @@ public class ShowTeamsCommand implements CommandExecutor {
         return teamInventory;
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-
-        if (sender instanceof Player player){
-
-            if(plugin.isChallengeStarted()){
-                player.sendMessage(ChatColor.RED + "You can't change teams while the challenge is running!");
-                return false;
-            }
-
-            updateInventory();
-
-            player.openInventory(teamInventory);
-        }
-        return true;
-    }
-
-    public static void updateInventory(){
+    public static void updateInventory() {
         ItemStack[] teamItems = {
                 new ItemStack(Material.RED_WOOL),
                 new ItemStack(Material.BLUE_WOOL),
@@ -85,6 +67,23 @@ public class ShowTeamsCommand implements CommandExecutor {
             teamItems[i].setItemMeta(meta);
             teamInventory.setItem(i, teamItems[i]);
         }
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+
+        if (sender instanceof Player player) {
+
+            if (plugin.isChallengeStarted()) {
+                player.sendMessage(ChatColor.RED + "You can't change teams while the challenge is running!");
+                return false;
+            }
+
+            updateInventory();
+
+            player.openInventory(teamInventory);
+        }
+        return true;
     }
 
 }

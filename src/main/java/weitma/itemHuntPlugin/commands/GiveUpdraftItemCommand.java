@@ -1,4 +1,4 @@
-package weitma.itemHuntPlugin.Commands;
+package weitma.itemHuntPlugin.commands;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,14 +17,14 @@ public class GiveUpdraftItemCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
-        if (sender instanceof Player player){
-            if(args.length != 2){
+        if (sender instanceof Player player) {
+            if (args.length != 2) {
                 player.sendMessage("Usage: /giveupdraftitem <player> <amount>");
                 return false;
             }
 
             Player target = plugin.getServer().getPlayer(args[0]);
-            if(target == null){
+            if (target == null) {
                 player.sendMessage("Player not found!");
                 return false;
             }

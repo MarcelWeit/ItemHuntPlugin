@@ -9,13 +9,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import weitma.itemHuntPlugin.Commands.ShowCollectedItemsCommand;
-import weitma.itemHuntPlugin.Commands.ShowTeamsCommand;
 import weitma.itemHuntPlugin.ItemHuntPlugin;
 import weitma.itemHuntPlugin.Utils.Team;
 import weitma.itemHuntPlugin.Utils.TeamManager;
-
-import java.util.HashMap;
+import weitma.itemHuntPlugin.commands.ShowCollectedItemsCommand;
+import weitma.itemHuntPlugin.commands.ShowTeamsCommand;
 
 public class InventoryClickListener implements Listener {
 
@@ -36,22 +34,22 @@ public class InventoryClickListener implements Listener {
 
         ItemStack currentItem = event.getCurrentItem();
 
-        if(currentItem == null){
+        if (currentItem == null) {
             return;
         }
 
-        if(ChatColor.stripColor(event.getView().getTitle()).equals("Teams")){
+        if (ChatColor.stripColor(event.getView().getTitle()).equals("Teams")) {
 
             event.setCancelled(true);
 
-            if(event.getClick().isRightClick()) return;
+            if (event.getClick().isRightClick()) return;
 
             Team team = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId());
-            if(team != null){
+            if (team != null) {
                 team.removePlayer(player.getUniqueId());
             }
 
-            switch(currentItem.getType()){
+            switch (currentItem.getType()) {
                 case RED_WOOL:
                     plugin.setPlayerListName(ChatColor.RED + "[Red] " + ChatColor.WHITE + player.getName(), player.getUniqueId());
                     TeamManager.getInstance().joinTeam(player.getUniqueId(), TeamManager.getInstance().getTeam(0));
@@ -97,28 +95,28 @@ public class InventoryClickListener implements Listener {
             }
             player.closeInventory();
 
-        } else if(ChatColor.stripColor(event.getView().getTitle()).startsWith("Items collected")){
+        } else if (ChatColor.stripColor(event.getView().getTitle()).startsWith("Items collected")) {
             event.setCancelled(true);
             Team team = TeamManager.getInstance().getTeamOfPlayer(player.getUniqueId());
             int currentIndex = showCollectedItemsCommand.getInvIndexOfPlayer(player);
 
-            if(currentItem.getType().equals(Material.STONE_BUTTON)){ //left
+            if (currentItem.getType().equals(Material.STONE_BUTTON)) { //left
                 currentIndex -= 1;
             }
 
-            if(currentItem.getType().equals(Material.OAK_BUTTON)){ //right
+            if (currentItem.getType().equals(Material.OAK_BUTTON)) { //right
                 currentIndex += 1;
             }
             String command = "showcollecteditems" + " " + TeamManager.getInstance().getTeamIndex(team.getTeamName()) + " " + player.getUniqueId() + " " + currentIndex;
             Bukkit.getLogger().info(command);
             Bukkit.dispatchCommand(player, command);
 
-        } else if(ChatColor.stripColor(event.getView().getTitle()).startsWith("Backpack")){
+        } else if (ChatColor.stripColor(event.getView().getTitle()).startsWith("Backpack")) {
             if (currentItem.getItemMeta() != null && currentItem.getItemMeta().hasCustomModelData() && currentItem.getItemMeta().getCustomModelData() == ItemHuntPlugin.BACKPACK_ID) {
                 event.getWhoClicked().sendMessage(ChatColor.RED + "Cant put Backpack in itself!");
                 event.setCancelled(true);
             }
-        } else if(inventory != null && inventory.equals(ShowTeamsCommand.getTeamInventory())){
+        } else if (inventory != null && inventory.equals(ShowTeamsCommand.getTeamInventory())) {
             ShowTeamsCommand.updateInventory();
         }
     }
