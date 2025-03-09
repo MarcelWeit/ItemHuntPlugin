@@ -39,6 +39,7 @@ You can choose to play without updraft items, skip items or backpack if you set 
 The skip items are placed in the bag of each team when the challenge starts.  
 The challenge begins and each team must collect a random item.  
 If one of the team members collects the item, the whole team must collect a new item and they will receive a point.  
+If you choose the same order Gamemode the progress of each team is hidden for all the other teams.  
 
 ![](https://i.imgur.com/t0aDeyy.png)
 
@@ -67,11 +68,11 @@ Players can then click on a **link in chat** to reopen the inventory and use but
 ![](https://i.imgur.com/6PPliKw.png)
 
 ## Commands for Server Operator
-- /skipitem <targetplayer> - Can be used by admin if the target item is too difficult to obtain
-- /resetchallenge - Resets the whole challenge
-- /results - Shows the result for the last place team after the timer has run out. You can use the command again to show the next place.
-- /timer <resume | pause>
-- /startvoteskipnight - Can be used if the vote failed previously and you want to vote again
-- /giveupdraftitem <targetPlayer> <amount>
+- /skipitem  \<targetplayer> - can be used by admin if the target item is too difficult to obtain
+- /resetchallenge - resets the whole challenge
+- /results - shows the result for the last place team after the timer has run out. You can use the command again to show the next place.
+- /timer \<resume | pause>
+- /startvoteskipnight - can be used if the vote failed previously and you want to vote again
+- /giveupdraftitem \<targetPlayer> \<amount>
 
 The Plugin is inspired by the item force battles of BastiGHG.
